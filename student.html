@@ -96,25 +96,23 @@
         tg.expand();
         tg.setHeaderColor('secondary_bg_color');
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const tutorId = urlParams.get('tutor_id');
+                const urlParams = new URLSearchParams(window.location.search);
         const tutorName = urlParams.get('tutor_name') || "Преподаватель";
-        const studentId = urlParams.get('student_id');
+        const studentName = urlParams.get('student_name') || (user ? user.first_name : "Ученик");
+        const subject = urlParams.get('subject') || "Занятие";
+        const lessonTime = urlParams.get('time') || "15:00";
+        const rawDays = urlParams.get('days') || "[1,3]";
+        
+        let lessonDays = [];
+        try { lessonDays = JSON.parse(rawDays); } catch(e) { lessonDays = [1, 3]; }
 
-        const user = tg.initDataUnsafe?.user;
         const myId = user ? user.id : 12345;
 
         document.getElementById('student-tg-id').innerText = `Telegram ID: ${myId}`;
-        if (user && user.first_name) {
-            document.getElementById('student-name').innerText = user.first_name;
-        }
+        document.getElementById('student-name').innerText = studentName;
 
         // Выводим имя преподавателя в профиль
         document.getElementById('tutor-info-box').innerHTML = `<b>${decodeURIComponent(tutorName)}</b><br><span style="color: #34c759; font-size: 12px; font-weight: bold;">Связь активна ✓</span>`;
-
-        // Получаем расписание ученика из localStorage репетитора (или симулируем привязку по ID)
-        let allStudents = JSON.parse(localStorage.getItem('tutorStudents')) || [];
-        let myStudentData = allStudents.find(s => s.tgId == myId || s.username === user?.username?.toLowerCase() || true); // fallback на первую запись для теста
 
         let selectedDateStr = formatDateKey(new Date());
 
@@ -152,13 +150,12 @@
             const container = document.getElementById('slots-container');
             container.innerHTML = '';
 
-            // Проверяем, есть ли у ученика урок в этот день недели
-            if (myStudentData && myStudentData.days && myStudentData.days.includes(dayOfWeek)) {
+            if (lessonDays.includes(dayOfWeek)) {
                 container.innerHTML = `
                     <div class="slot">
                         <div>
-                            <div class="slot-time">${myStudentData.time || '15:00'}</div>
-                            <div class="slot-info"><b>${myStudentData.subject || 'Занятие'}</b> • ${decodeURIComponent(tutorName)}</div>
+                            <div class="slot-time">${lessonTime}</div>
+                            <div class="slot-info"><b>${subject}</b> • ${decodeURIComponent(tutorName)}</div>
                         </div>
                         <div class="slot-price">Запланировано</div>
                     </div>`;
