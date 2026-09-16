@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Кабинет Репетитора (CRM)</title>
+    <title>Умный Репетитор</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
         :root { --accent-color: var(--tg-theme-button-color, #3390ec); }
-
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); color: var(--tg-theme-text-color, #000000); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         .content-area { flex-grow: 1; overflow-y: auto; padding: 16px; position: relative; width: 100%; }
@@ -59,8 +58,7 @@
         .day-badge { position: absolute; top: 4px; right: 4px; background: #34c759; color: white; font-size: 9px; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .day-badge.empty { background: var(--tg-theme-secondary-bg-color, #e5e5ea); color: var(--tg-theme-hint-color, #888); }
 
-        .big-cal-btn { background: var(--tg-theme-bg-color, #fff); border: 1px solid var(--tg-theme-hint-color, #ccc); border-radius: 10px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.03); color: var(--tg-theme-text-color, #000); }
-        #hidden-date-picker { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
+        .big-cal-btn { background: var(--tg-theme-bg-color, #fff); border: 1px solid var(--tg-theme-hint-color, #ccc); border-radius: 10px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--tg-theme-text-color, #000); }
 
         .slot { background-color: var(--tg-theme-bg-color, #fff); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.03); border-left: 4px solid transparent; cursor: pointer; }
         .slot.booked { border-left-color: #34c759; }
@@ -86,48 +84,76 @@
         .input-label { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin-bottom: 4px; display: block; font-weight: 500; }
         .delete-btn { background: none; border: none; color: #ff3b30; font-size: 22px; cursor: pointer; padding: 0 8px; }
         .edit-st-btn { background: none; border: none; color: var(--accent-color); font-size: 18px; cursor: pointer; padding: 0 6px; }
+        
+        /* Лоадер для ожидания сервера */
+        #loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--tg-theme-bg-color, #fff); z-index: 1000; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--accent-color); transition: opacity 0.3s; }
     </style>
 </head>
 <body>
 
+    <!-- ЭКРАН ЗАГРУЗКИ (пока ждем данные с сервера) -->
+    <div id="loading-overlay">Синхронизация данных...</div>
+
     <div class="content-area">
-        
-        <!-- ПРОФИЛЬ РЕПЕТИТОРА -->
+        <!-- ПРОФИЛЬ / КАБИНЕТ -->
         <div id="tab-profile" class="tab-content">
-            <div class="card profile-card">
-                <div class="avatar-container"><img id="user-avatar" src="" alt="Avatar"><span id="avatar-fallback" class="avatar-fallback">В</span></div>
-                <h2 id="user-name" class="profile-name">Загрузка...</h2>
-                <p id="user-subjects" class="profile-role">Преподаватель</p>
-            </div>
             
-            <div class="card">
-                <div class="goal-header"><span>Заработано / Цель</span><span id="finance-text" style="color: var(--accent-color);">0 / 0 ₽</span></div>
-                <div class="progress-bg"><div id="finance-progress" class="progress-fill"></div></div>
+            <div id="tutor-profile-view">
+                <div class="card profile-card">
+                    <div class="avatar-container"><span id="avatar-fallback" class="avatar-fallback">В</span></div>
+                    <h2 id="user-name" class="profile-name">Загрузка...</h2>
+                    <p id="user-subjects" class="profile-role">Преподаватель</p>
+                </div>
+                
+                <div class="card">
+                    <div class="goal-header"><span>Заработано / Цель</span><span id="finance-text" style="color: var(--accent-color);">0 / 0 ₽</span></div>
+                    <div class="progress-bg"><div id="finance-progress" class="progress-fill"></div></div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box"><p id="stat-students" class="stat-value">0</p><p class="stat-label">Учеников</p></div>
+                    <div class="stat-box"><p id="stat-earned" class="stat-value">0 ₽</p><p class="stat-label">Факт доход</p></div>
+                    <div class="stat-box"><p id="stat-attendance" class="stat-value">100%</p><p class="stat-label">Явка</p></div>
+                </div>
+                <button class="action-btn" onclick="openModal('modal-students')">👥 Список учеников</button>
+                <button class="action-btn green" style="margin-top: 10px;" onclick="openPaymentsModal()">💳 Учет оплат и долги</button>
+                <div class="btn-group" style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="action-btn secondary" onclick="openModal('modal-settings')">⚙️ Настройки</button>
+                    <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
+                </div>
+                <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
             </div>
 
-            <div class="stats-row">
-                <div class="stat-box"><p id="stat-students" class="stat-value">0</p><p class="stat-label">Учеников</p></div>
-                <div class="stat-box"><p id="stat-earned" class="stat-value">0 ₽</p><p class="stat-label">Факт доход</p></div>
-                <div class="stat-box"><p id="stat-attendance" class="stat-value">100%</p><p class="stat-label">Явка</p></div>
+            <div id="student-profile-view" style="display: none;">
+                <div class="card profile-card">
+                    <h2 id="student-cabinet-name" class="profile-name">Кабинет ученика</h2>
+                    <p id="student-tg-id-label" class="profile-role">Telegram ID: загрузка...</p>
+                </div>
+                
+                <div class="card">
+                    <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;">👨‍🏫 Мой преподаватель</div>
+                    <div id="student-tutors-list">
+                        <div style="font-size: 13px; color: var(--tg-theme-hint-color);">Загрузка преподавателя...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px;">Статус и баланс</div>
+                    <div id="student-payment-status" style="font-size: 15px; color: #34c759; font-weight: bold;">Активный ученик</div>
+                </div>
             </div>
-            <button class="action-btn" onclick="openModal('modal-students')">👥 Список учеников</button>
-            <button class="action-btn green" style="margin-top: 10px;" onclick="openPaymentsModal()">💳 Учет оплат и долги</button>
-            <div class="btn-group" style="display:flex; gap:8px; margin-top:10px;">
-                <button class="action-btn secondary" onclick="openModal('modal-settings')">⚙️ Настройки</button>
-                <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
-            </div>
-            <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
         </div>
 
         <!-- РАСПИСАНИЕ -->
-        <div class="calendar-header-panel">
-            <div class="calendar-nav" id="calendar-slider"></div>
-            <div style="position: relative; width: 42px; height: 42px; flex-shrink: 0;">
-                <div class="big-cal-btn" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">▼</div>
-                <input type="date" onchange="onNativeDatePicked(this)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
+        <div id="tab-schedule" class="tab-content active">
+            <!-- ИСПРАВЛЕННАЯ ШАПКА КАЛЕНДАРЯ (нажимается на всех телефонах) -->
+            <div class="calendar-header-panel">
+                <div class="calendar-nav" id="calendar-slider"></div>
+                <div style="position: relative; width: 42px; height: 42px; flex-shrink: 0;">
+                    <div class="big-cal-btn" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">▼</div>
+                    <input type="date" onchange="onNativeDatePicked(this)" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
+                </div>
             </div>
-        </div>
-
             
             <h3 id="selected-date-title" style="margin: 6px 0 12px 0; font-size: 15px;">Расписание</h3>
             <div id="slots-container"></div>
@@ -137,12 +163,11 @@
         <div id="tab-homework" class="tab-content">
             <h2>📚 Домашние задания</h2>
             <div id="homework-container">
-                <div class="card"><div style="font-weight:bold;">Управление заданиями</div><div style="font-size:13px; color:gray;">Здесь репетитор сможет назначать домашку.</div></div>
+                <div class="card"><div style="font-weight:bold;">Вводное задание</div><div style="font-size:13px; color:gray;">Здесь будут домашние задания от преподавателя.</div></div>
             </div>
         </div>
 
         <!-- ================= МОДАЛКИ ================= -->
-        
         <div id="modal-students" class="modal">
             <h2>Мои ученики</h2>
             <button class="action-btn secondary" style="margin-bottom: 12px;" onclick="openAddStudentModal()">+ Добавить ученика</button>
@@ -154,19 +179,14 @@
             <input type="hidden" id="editing-st-index" value="-1">
             <label class="input-label">Имя ученика</label>
             <input type="text" id="new-st-name" class="input-field" placeholder="Алексей">
-            
-            <label class="input-label">Telegram Username ученика</label>
-            <input type="text" id="new-st-username" class="input-field" placeholder="@username">
-
+            <label class="input-label">Telegram ID ученика</label>
+            <input type="number" id="new-st-tgid" class="input-field" placeholder="123456789">
             <label class="input-label">Предмет</label>
             <input type="text" id="new-st-subject" class="input-field" placeholder="C++">
-
             <label class="input-label">Ставка (₽/час)</label>
             <input type="number" id="new-st-rate" class="input-field" placeholder="Общая ставка">
-
             <label class="input-label">Время урока</label>
             <input type="time" id="new-st-time" class="input-field" value="15:00">
-
             <label class="input-label">Дни недели</label>
             <div class="days-selector">
                 <div class="day-check selected" onclick="toggleDay(this)" data-day="1">Пн</div>
@@ -177,7 +197,6 @@
                 <div class="day-check" onclick="toggleDay(this)" data-day="6">Сб</div>
                 <div class="day-check" onclick="toggleDay(this)" data-day="0">Вс</div>
             </div>
-
             <button class="action-btn" onclick="saveStudentData()">Сохранить ученика</button>
         </div>
 
@@ -214,32 +233,131 @@
 
     <!-- Навигация -->
     <div class="tab-bar" id="bottom-nav">
-        <div class="tab-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span>Профиль</span></div>
+        <div class="tab-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span id="nav-profile-label">Профиль</span></div>
         <div class="tab-btn active" onclick="switchTab('tab-schedule', this)"><span class="icon">📅</span><span>Расписание</span></div>
         <div class="tab-btn" onclick="switchTab('tab-homework', this)"><span class="icon">📚</span><span>Домашка</span></div>
     </div>
 
     <script>
+        // ================= НАСТРОЙКИ СЕРВЕРА =================
+        // Вставь сюда свой актуальный ngrok URL БЕЗ слеша на конце!
+        const API_URL = "https://avert-schnapps-elaborate.ngrok-free.dev";
+        // =====================================================
+
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
         tg.setHeaderColor('secondary_bg_color');
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const userRole = urlParams.get('role') || 'tutor';
+        const currentStudentId = urlParams.get('student_id');
+        const tutorIdFromUrl = urlParams.get('tutor_id');
+
         const user = tg.initDataUnsafe?.user;
         const myTelegramId = user ? user.id : 12345;
+        
+        // Определяем, чье расписание мы грузим (свое или преподавателя по ссылке)
+        const targetTutorId = tutorIdFromUrl ? tutorIdFromUrl : myTelegramId;
 
+        // Данные преподавателя из локального хранилища (имя, ставки, цели и цвета)
         let savedName = localStorage.getItem('tutorName') || (user ? user.first_name : "Репетитор");
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = Number(localStorage.getItem('tutorRate') || 1500);
         let savedGoal = Number(localStorage.getItem('tutorGoal') || 60000);
         let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
         let savedBotLink = localStorage.getItem('tutorBotLink') || `https://t.me/TutorScheduleBot?start=tutor_${myTelegramId}`;
+        
+        document.documentElement.style.setProperty('--accent-color', savedAccent);
 
-        let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [{name: 'Алексей', username: '', subject: 'C++', rate: '', time: '15:00', days: [1, 3]}];
-        let lessonsState = JSON.parse(localStorage.getItem('tutorLessons')) || {}; 
+        // --- ДАННЫЕ СЕРВЕРА (заменят локальные) ---
+        let studentsList = [];
+        let lessonsState = {}; 
         let selectedDateStr = formatDateKey(new Date());
 
-        document.documentElement.style.setProperty('--accent-color', savedAccent);
+        // --- АСИНХРОННАЯ ЗАГРУЗКА И СОХРАНЕНИЕ ---
+        async function loadServerData() {
+            try {
+                let response = await fetch(`${API_URL}/api/get_data?tutor_id=${targetTutorId}`);
+                let data = await response.json();
+                
+                studentsList = data.students || [];
+                lessonsState = data.lessons || {};
+
+                // Инициализируем интерфейс после загрузки
+                if (userRole === 'student') {
+                    document.getElementById('tutor-profile-view').style.display = 'none';
+                    document.getElementById('student-profile-view').style.display = 'block';
+                    document.getElementById('nav-profile-label').innerText = "Кабинет";
+                    renderStudentProfile();
+                } else {
+                    updateUI();
+                }
+                renderStudents();
+                buildCalendar();
+                
+                let initialDateObj = new Date();
+                let options = { day: 'numeric', month: 'long', weekday: 'long' };
+                document.getElementById('selected-date-title').innerText = "Расписание на " + initialDateObj.toLocaleDateString('ru-RU', options);
+                renderSlotsForSelectedDate();
+                
+                // Убираем экран загрузки
+                document.getElementById('loading-overlay').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading-overlay').style.display = 'none', 300);
+            } catch (e) {
+                console.error("Ошибка сети:", e);
+                tg.showAlert("Не удалось подключиться к серверу. Убедитесь, что бот и ngrok запущены.");
+            }
+        }
+
+        async function saveToServer() {
+            if (userRole !== 'tutor') return; // Ученик не может изменять расписание
+            try {
+                await fetch(`${API_URL}/api/save_data`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        tutor_id: targetTutorId,
+                        students: studentsList,
+                        lessons: lessonsState
+                    })
+                });
+            } catch (e) {
+                console.error("Ошибка сохранения на сервер:", e);
+            }
+        }
+
+        // Рендер информации ученика
+        function renderStudentProfile() {
+            if (userRole !== 'student') return;
+            document.getElementById('student-tg-id-label').innerText = `Telegram ID: ${myTelegramId}`;
+            const container = document.getElementById('student-tutors-list');
+            container.innerHTML = '';
+            
+            let foundStudent = studentsList.find(s => s.tgId == myTelegramId || s.tgId == currentStudentId);
+            
+            if (foundStudent) {
+                document.getElementById('student-cabinet-name').innerText = foundStudent.name;
+                container.innerHTML = `
+                    <div class="list-item" style="margin-bottom: 0; background: var(--tg-theme-secondary-bg-color);">
+                        <div>
+                            <b>Предмет: ${foundStudent.subject}</b>
+                            <br><span style="font-size: 12px; color: gray;">Время урока: ${foundStudent.time}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--accent-color); font-weight: bold;">Активен</div>
+                    </div>`;
+            } else if (tutorIdFromUrl) {
+                container.innerHTML = `
+                    <div class="list-item" style="margin-bottom: 0; background: var(--tg-theme-secondary-bg-color);">
+                        <div>
+                            <b>Преподаватель ID: ${tutorIdFromUrl}</b>
+                            <br><span style="font-size: 12px; color: gray;">Синхронизировано по визитке</span>
+                        </div>
+                    </div>`;
+            } else {
+                container.innerHTML = '<div style="font-size: 13px; color: gray;">Ученик не найден в базе по вашему ID.</div>';
+            }
+        }
 
         // --- КАЛЕНДАРЬ ---
         function buildCalendar() {
@@ -265,6 +383,7 @@
         function getLessonsCountForDate(dateKey, dayOfWeek) {
             let count = 0;
             studentsList.forEach((st, stIndex) => {
+                if (userRole === 'student' && currentStudentId && st.tgId && st.tgId !== currentStudentId) return;
                 if (st.days && st.days.includes(dayOfWeek)) {
                     let key = `${dateKey}_${stIndex}`;
                     if (!lessonsState[key] || !lessonsState[key].deleted) count++;
@@ -273,9 +392,7 @@
             return count;
         }
 
-        function formatDateKey(date) {
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        }
+        function formatDateKey(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 
         function selectCalendarDay(dateObj, dateKey, element) {
             tg.HapticFeedback.selectionChanged();
@@ -287,10 +404,8 @@
         }
 
         function triggerNativeCalendar() {
+            // Больше не используется напрямую, но функция пусть будет
             tg.HapticFeedback.impactOccurred('medium');
-            let picker = document.getElementById('hidden-date-picker');
-            picker.value = selectedDateStr;
-            picker.showPicker ? picker.showPicker() : picker.click();
         }
 
         function onNativeDatePicked(input) {
@@ -311,6 +426,8 @@
 
             let dayLessons = [];
             studentsList.forEach((st, stIndex) => {
+                if (userRole === 'student' && currentStudentId && st.tgId && st.tgId !== currentStudentId) return;
+
                 if (st.days && st.days.includes(dayOfWeek)) {
                     let key = `${selectedDateStr}_${stIndex}`;
                     if (lessonsState[key] && lessonsState[key].deleted) return;
@@ -328,7 +445,7 @@
 
             if (dayLessons.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:var(--tg-theme-hint-color); padding: 30px 0;">На этот день нет занятий</p>';
-                updateFinanceStats();
+                if (userRole === 'tutor') updateFinanceStats();
                 return;
             }
 
@@ -336,8 +453,12 @@
                 let statusClass = les.done ? 'done' : (les.paid ? 'booked' : 'debt');
                 let priceText = les.done ? 'Состоялся' : (les.paid ? `${les.rate} ₽` : 'Долг');
                 
+                let clickAction = userRole === 'tutor' 
+                    ? `openSlotAction('${les.key}', '${les.name}', '${les.time}')` 
+                    : `tg.showAlert('Занятие: ${les.subject} в ${les.time}')`;
+
                 container.innerHTML += `
-                    <div class="slot ${statusClass}" onclick="openSlotAction('${les.key}', '${les.name}', '${les.time}')">
+                    <div class="slot ${statusClass}" onclick="${clickAction}">
                         <div>
                             <div class="slot-time">${les.time}</div>
                             <div class="slot-info"><b>${les.name}</b> • ${les.subject}</div>
@@ -345,12 +466,13 @@
                         <div class="slot-price" style="color: ${les.paid || les.done ? 'inherit' : '#ff3b30'};">${priceText}</div>
                     </div>`;
             });
-            updateFinanceStats();
+            if (userRole === 'tutor') updateFinanceStats();
         }
 
         // --- УПРАВЛЕНИЕ УРОКОМ ---
         let activeLessonKey = null;
         function openSlotAction(key, name, time) {
+            if (userRole !== 'tutor') return;
             activeLessonKey = key;
             if(!lessonsState[key]) lessonsState[key] = { paid: false, time, done: false, deleted: false };
 
@@ -372,7 +494,7 @@
         function togglePaymentStatus() {
             tg.HapticFeedback.notificationOccurred('success');
             if(lessonsState[activeLessonKey]) lessonsState[activeLessonKey].paid = !lessonsState[activeLessonKey].paid;
-            localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
+            saveToServer(); // Отправляем на сервер
             closeModal();
             renderSlotsForSelectedDate();
         }
@@ -380,7 +502,7 @@
         function toggleLessonDone() {
             tg.HapticFeedback.notificationOccurred('success');
             if(lessonsState[activeLessonKey]) lessonsState[activeLessonKey].done = !lessonsState[activeLessonKey].done;
-            localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
+            saveToServer(); // Отправляем на сервер
             closeModal();
             renderSlotsForSelectedDate();
             buildCalendar();
@@ -392,7 +514,7 @@
                 tg.HapticFeedback.notificationOccurred('success');
                 if(!lessonsState[activeLessonKey]) lessonsState[activeLessonKey] = {};
                 lessonsState[activeLessonKey].time = newTime;
-                localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
+                saveToServer(); // Отправляем на сервер
                 closeModal();
                 renderSlotsForSelectedDate();
                 buildCalendar();
@@ -403,7 +525,7 @@
             tg.HapticFeedback.notificationOccurred('warning');
             if(!lessonsState[activeLessonKey]) lessonsState[activeLessonKey] = {};
             lessonsState[activeLessonKey].deleted = true;
-            localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
+            saveToServer(); // Отправляем на сервер
             closeModal();
             renderSlotsForSelectedDate();
             buildCalendar();
@@ -411,6 +533,7 @@
 
         // --- ФИНАНСЫ ---
         function updateFinanceStats() {
+            if (userRole !== 'tutor') return;
             let totalEarned = 0;
             Object.keys(lessonsState).forEach(k => {
                 let les = lessonsState[k];
@@ -465,7 +588,7 @@
             document.getElementById('st-modal-title').innerText = "Новый ученик";
             document.getElementById('editing-st-index').value = "-1";
             document.getElementById('new-st-name').value = "";
-            document.getElementById('new-st-username').value = "";
+            document.getElementById('new-st-tgid').value = "";
             document.getElementById('new-st-subject').value = "";
             document.getElementById('new-st-rate').value = "";
             document.getElementById('new-st-time').value = "15:00";
@@ -478,7 +601,7 @@
             document.getElementById('st-modal-title').innerText = "Редактировать ученика";
             document.getElementById('editing-st-index').value = index;
             document.getElementById('new-st-name').value = st.name;
-            document.getElementById('new-st-username').value = st.username ? `@${st.username}` : '';
+            document.getElementById('new-st-tgid').value = st.tgId || '';
             document.getElementById('new-st-subject').value = st.subject;
             document.getElementById('new-st-rate').value = st.rate !== undefined ? st.rate : '';
             document.getElementById('new-st-time').value = st.time;
@@ -496,7 +619,7 @@
         function saveStudentData() {
             let index = parseInt(document.getElementById('editing-st-index').value);
             let name = document.getElementById('new-st-name').value;
-            let username = document.getElementById('new-st-username').value.replace('@', '').toLowerCase().trim();
+            let tgId = document.getElementById('new-st-tgid').value;
             let subject = document.getElementById('new-st-subject').value || "Общий";
             let rate = document.getElementById('new-st-rate').value;
             let time = document.getElementById('new-st-time').value || "15:00";
@@ -508,11 +631,11 @@
 
             if(name.trim() !== "") {
                 if(index === -1) {
-                    studentsList.push({ name, username, subject, rate, time, days: selectedDays });
+                    studentsList.push({ name, tgId, subject, rate, time, days: selectedDays });
                 } else {
-                    studentsList[index] = { name, username, subject, rate, time, days: selectedDays };
+                    studentsList[index] = { name, tgId, subject, rate, time, days: selectedDays };
                 }
-                localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
+                saveToServer(); // Отправляем данные на сервер
                 renderStudents();
                 renderSlotsForSelectedDate();
                 buildCalendar();
@@ -524,16 +647,16 @@
         }
 
         function renderStudents() {
+            if (userRole !== 'tutor') return;
             const container = document.getElementById('students-container');
             container.innerHTML = '';
             studentsList.forEach((st, index) => {
                 let daysNames = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
                 let dStr = st.days ? st.days.map(d => daysNames[d]).join(', ') : '';
                 let stRate = (st.rate !== '' && !isNaN(st.rate)) ? `${st.rate} ₽/ч` : `Общая (${savedRate} ₽)`;
-                let unStr = st.username ? `@${st.username}` : '—';
                 container.innerHTML += `
                     <div class="list-item">
-                        <div><b>${st.name}</b> <span style="font-size:11px; color:gray;">${unStr}</span><br><span style="font-size:12px; color:gray;">${st.subject} • ${stRate}<br>${st.time} (${dStr})</span></div>
+                        <div><b>${st.name}</b> <span style="font-size:11px; color:gray;">ID: ${st.tgId || '—'}</span><br><span style="font-size:12px; color:gray;">${st.subject} • ${stRate}<br>${st.time} (${dStr})</span></div>
                         <div style="display:flex; align-items:center;">
                             <button class="edit-st-btn" onclick="openEditStudentModal(${index})">✏️</button>
                             <button class="delete-btn" onclick="removeStudent(${index})">×</button>
@@ -546,7 +669,7 @@
         function removeStudent(index) {
             tg.HapticFeedback.impactOccurred('light');
             studentsList.splice(index, 1);
-            localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
+            saveToServer(); // Удаляем с сервера
             renderStudents();
             renderSlotsForSelectedDate();
             buildCalendar();
@@ -554,6 +677,7 @@
 
         // --- ПРОФИЛЬ И НАСТРОЙКИ ---
         function updateUI() {
+            if (userRole !== 'tutor') return;
             document.getElementById('user-name').innerText = savedName;
             document.getElementById('edit-name-input').value = savedName;
             document.getElementById('edit-subjects-input').value = savedSubjects;
@@ -591,8 +715,9 @@
 
         function shareBusinessCard() {
             tg.HapticFeedback.impactOccurred('medium');
-            let personalLink = `https://t.me/TutorScheduleBot?start=tutor_${myTelegramId}`;
-            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего бота. Жми на ссылку! 👇`;
+            let currentTutorId = user ? user.id : 12345;
+            let personalLink = `https://t.me/TutorScheduleBot?start=tutor_${currentTutorId}`;
+            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего удобного бота-помощника. Жми на ссылку! 👇`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(personalLink)}&text=${encodeURIComponent(cardText)}`;
             tg.openTelegramLink(shareUrl);
         }
@@ -622,14 +747,9 @@
         }
         tg.BackButton.onClick(function() { closeModal(); });
 
-        updateUI();
-        renderStudents();
-        buildCalendar();
-        
-        let initialDateObj = new Date();
-        let options = { day: 'numeric', month: 'long', weekday: 'long' };
-        document.getElementById('selected-date-title').innerText = "Расписание на " + initialDateObj.toLocaleDateString('ru-RU', options);
-        renderSlotsForSelectedDate();
+        // ЗАПУСКАЕМ ПРИЛОЖЕНИЕ (тянем данные с сервера)
+        loadServerData();
+
     </script>
 </body>
 </html>
