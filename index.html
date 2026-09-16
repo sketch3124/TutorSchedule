@@ -127,12 +127,20 @@
                 <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
             </div>
 
-            <!-- Режим студента (Личный кабинет) -->
+            <!-- Режим студента (Личный кабинет со списком преподавателей) -->
             <div id="student-profile-view" style="display: none;">
                 <div class="card profile-card">
                     <h2 id="student-cabinet-name" class="profile-name">Кабинет ученика</h2>
-                    <p class="profile-role">Ваш статус и занятия</p>
+                    <p class="profile-role">Ваш профиль и преподаватели</p>
                 </div>
+                
+                <div class="card">
+                    <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px;">👨‍🏫 Мои преподаватели</div>
+                    <div id="student-tutors-list">
+                        <div style="font-size: 13px; color: var(--tg-theme-hint-color);">Загрузка преподавателей...</div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px;">Статус занятий</div>
                     <div style="font-size: 15px; color: #34c759; font-weight: bold;">Активный ученик</div>
@@ -248,6 +256,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const userRole = urlParams.get('role') || 'tutor';
         const currentStudentId = urlParams.get('student_id');
+        const tutorIdFromUrl = urlParams.get('tutor_id');
 
         const user = tg.initDataUnsafe?.user;
         const myTelegramId = user ? user.id : 12345;
@@ -272,6 +281,26 @@
             document.getElementById('nav-profile-label').innerText = "Кабинет";
             let myStudent = studentsList.find(s => s.tgId == currentStudentId);
             if (myStudent) document.getElementById('student-cabinet-name').innerText = myStudent.name;
+            renderStudentProfile();
+        }
+
+        // Рендер списка преподавателей для профиля ученика
+        function renderStudentProfile() {
+            if (userRole !== 'student') return;
+            const container = document.getElementById('student-tutors-list');
+            container.innerHTML = '';
+            
+            if (tutorIdFromUrl) {
+                container.innerHTML = `
+                    <div class="list-item" style="margin-bottom: 0; background: var(--tg-theme-secondary-bg-color);">
+                        <div>
+                            <b>Преподаватель ID: ${tutorIdFromUrl}</b>
+                            <br><span style="font-size: 12px; color: gray;">Синхронизировано с расписанием</span>
+                        </div>
+                    </div>`;
+            } else {
+                container.innerHTML = '<div style="font-size: 13px; color: gray;">Нет активных преподавателей. Откройте визитку преподавателя!</div>';
+            }
         }
 
         // --- КАЛЕНДАРЬ ---
@@ -632,25 +661,14 @@
             tg.HapticFeedback.selectionChanged();
         }
 
-                function shareBusinessCard() {
+        function shareBusinessCard() {
             tg.HapticFeedback.impactOccurred('medium');
-            
-            // Берем актуальный ID пользователя (или дефолтный, если запуск вне Telegram)
             let currentTutorId = user ? user.id : 12345;
-            
-            // Формируем персональную глубокую ссылку (Deep Link) именно на твой профиль
             let personalLink = `https://t.me/TutorScheduleBot?start=tutor_${currentTutorId}`;
-            
-            // Красивый текст визитки
             const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего удобного бота-помощника. Жми на ссылку! 👇`;
-            
-            // Ссылка для системного окна «Поделиться» в Telegram
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(personalLink)}&text=${encodeURIComponent(cardText)}`;
-            
-            // Открываем окно выбора чата
             tg.openTelegramLink(shareUrl);
         }
-
 
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
