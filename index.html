@@ -153,8 +153,8 @@
             <label class="input-label">Имя ученика</label>
             <input type="text" id="new-st-name" class="input-field" placeholder="Алексей">
             
-            <label class="input-label">Telegram ID ученика</label>
-            <input type="number" id="new-st-tgid" class="input-field" placeholder="123456789">
+            <label class="input-label">Telegram Username ученика</label>
+            <input type="text" id="new-st-username" class="input-field" placeholder="@username">
 
             <label class="input-label">Предмет</label>
             <input type="text" id="new-st-subject" class="input-field" placeholder="C++">
@@ -233,7 +233,7 @@
         let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
         let savedBotLink = localStorage.getItem('tutorBotLink') || `https://t.me/TutorScheduleBot?start=tutor_${myTelegramId}`;
 
-        let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [{name: 'Алексей', tgId: '', subject: 'C++', rate: '', time: '15:00', days: [1, 3]}];
+        let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [{name: 'Алексей', username: '', subject: 'C++', rate: '', time: '15:00', days: [1, 3]}];
         let lessonsState = JSON.parse(localStorage.getItem('tutorLessons')) || {}; 
         let selectedDateStr = formatDateKey(new Date());
 
@@ -463,7 +463,7 @@
             document.getElementById('st-modal-title').innerText = "Новый ученик";
             document.getElementById('editing-st-index').value = "-1";
             document.getElementById('new-st-name').value = "";
-            document.getElementById('new-st-tgid').value = "";
+            document.getElementById('new-st-username').value = "";
             document.getElementById('new-st-subject').value = "";
             document.getElementById('new-st-rate').value = "";
             document.getElementById('new-st-time').value = "15:00";
@@ -476,7 +476,7 @@
             document.getElementById('st-modal-title').innerText = "Редактировать ученика";
             document.getElementById('editing-st-index').value = index;
             document.getElementById('new-st-name').value = st.name;
-            document.getElementById('new-st-tgid').value = st.tgId || '';
+            document.getElementById('new-st-username').value = st.username ? `@${st.username}` : '';
             document.getElementById('new-st-subject').value = st.subject;
             document.getElementById('new-st-rate').value = st.rate !== undefined ? st.rate : '';
             document.getElementById('new-st-time').value = st.time;
@@ -494,7 +494,7 @@
         function saveStudentData() {
             let index = parseInt(document.getElementById('editing-st-index').value);
             let name = document.getElementById('new-st-name').value;
-            let tgId = document.getElementById('new-st-tgid').value;
+            let username = document.getElementById('new-st-username').value.replace('@', '').toLowerCase().trim();
             let subject = document.getElementById('new-st-subject').value || "Общий";
             let rate = document.getElementById('new-st-rate').value;
             let time = document.getElementById('new-st-time').value || "15:00";
@@ -506,9 +506,9 @@
 
             if(name.trim() !== "") {
                 if(index === -1) {
-                    studentsList.push({ name, tgId, subject, rate, time, days: selectedDays });
+                    studentsList.push({ name, username, subject, rate, time, days: selectedDays });
                 } else {
-                    studentsList[index] = { name, tgId, subject, rate, time, days: selectedDays };
+                    studentsList[index] = { name, username, subject, rate, time, days: selectedDays };
                 }
                 localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
                 renderStudents();
@@ -528,9 +528,10 @@
                 let daysNames = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
                 let dStr = st.days ? st.days.map(d => daysNames[d]).join(', ') : '';
                 let stRate = (st.rate !== '' && !isNaN(st.rate)) ? `${st.rate} ₽/ч` : `Общая (${savedRate} ₽)`;
+                let unStr = st.username ? `@${st.username}` : '—';
                 container.innerHTML += `
                     <div class="list-item">
-                        <div><b>${st.name}</b> <span style="font-size:11px; color:gray;">ID: ${st.tgId || '—'}</span><br><span style="font-size:12px; color:gray;">${st.subject} • ${stRate}<br>${st.time} (${dStr})</span></div>
+                        <div><b>${st.name}</b> <span style="font-size:11px; color:gray;">${unStr}</span><br><span style="font-size:12px; color:gray;">${st.subject} • ${stRate}<br>${st.time} (${dStr})</span></div>
                         <div style="display:flex; align-items:center;">
                             <button class="edit-st-btn" onclick="openEditStudentModal(${index})">✏️</button>
                             <button class="delete-btn" onclick="removeStudent(${index})">×</button>
