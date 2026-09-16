@@ -7,76 +7,150 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
+        /* Базовые стили */
         body {
             margin: 0; padding: 0;
-            background-color: var(--tg-theme-bg-color, #ffffff);
+            background-color: var(--tg-theme-bg-color, #f0f2f5); /* Чуть более серый фон для контраста карточек */
             color: var(--tg-theme-text-color, #000000);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
         .content-area { flex-grow: 1; overflow-y: auto; padding: 20px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Стили для нижней панели */
-        .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); padding-bottom: env(safe-area-inset-bottom); }
-        .tab-btn { flex: 1; padding: 12px 0 16px 0; text-align: center; font-size: 12px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .tab-btn .icon { font-size: 22px; filter: grayscale(100%); opacity: 0.6; }
+        /* Навигация */
+        .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-bg-color, #ffffff); padding-bottom: env(safe-area-inset-bottom); }
+        .tab-btn { flex: 1; padding: 12px 0 16px 0; text-align: center; font-size: 12px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s; }
+        .tab-btn .icon { font-size: 22px; filter: grayscale(100%); opacity: 0.6; transition: 0.2s; }
         .tab-btn.active { color: var(--tg-theme-link-color, #007aff); font-weight: 600; }
-        .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; }
+        .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; transform: scale(1.1); }
 
-        /* Стили для расписания */
-        .slot { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); border-radius: 10px; }
-        .slot-time { font-weight: bold; color: var(--tg-theme-link-color, #007aff); }
-        .add-btn { background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        /* ================= ДИЗАЙН ПРОФИЛЯ ================= */
+        .profile-card {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        /* Аватарка */
+        .avatar-container {
+            width: 80px; height: 80px;
+            margin: 0 auto 15px auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #007aff, #3390ec);
+            display: flex; justify-content: center; align-items: center;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3);
+        }
+        .avatar-container img {
+            width: 100%; height: 100%; object-fit: cover; display: none;
+        }
+        .avatar-fallback {
+            color: white; font-size: 32px; font-weight: bold;
+        }
+
+        /* Текст профиля */
+        .profile-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0; }
+        .profile-role { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin: 0; }
+
+        /* Блок статистики */
+        .stats-row {
+            display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px;
+        }
+        .stat-box {
+            flex: 1; background-color: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 12px; padding: 15px 10px; text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .stat-value { font-size: 20px; font-weight: bold; color: var(--tg-theme-link-color, #007aff); margin: 0 0 4px 0; }
+        .stat-label { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin: 0; }
+
+        /* Красивые кнопки */
+        .action-btn {
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #fff);
+            border: none; padding: 14px; border-radius: 12px;
+            width: 100%; font-size: 16px; font-weight: bold;
+            cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px;
+            box-shadow: 0 4px 10px rgba(51, 144, 236, 0.2); transition: 0.2s;
+        }
+        .action-btn:active { transform: scale(0.98); }
+        .action-btn.secondary {
+            background-color: var(--tg-theme-secondary-bg-color, #e5e5ea);
+            color: var(--tg-theme-text-color, #000);
+            box-shadow: none; margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 
     <div class="content-area">
         
-        <!-- Вкладка 1: Расписание -->
-        <div id="tab-schedule" class="tab-content active">
-            <h2>📅 Расписание на сегодня</h2>
+        <!-- ================= ВКЛАДКА 1: ПРОФИЛЬ (Теперь стартовая) ================= -->
+        <div id="tab-profile" class="tab-content active">
             
-            <!-- Контейнер, куда будут добавляться слоты учеников -->
-            <div id="slots-container">
-                <div class="slot">
-                    <span class="slot-time">15:00</span>
-                    <span class="slot-name">Алексей (Математика)</span>
+            <div class="profile-card">
+                <div class="avatar-container">
+                    <!-- Сюда подгрузится реальное фото, либо останется буква -->
+                    <img id="user-avatar" src="" alt="Avatar">
+                    <span id="avatar-fallback" class="avatar-fallback">Р</span>
+                </div>
+                <h2 id="user-name" class="profile-name">Загрузка...</h2>
+                <p class="profile-role">Преподаватель (Физика, C++)</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <p class="stat-value">12</p>
+                    <p class="stat-label">Учеников</p>
+                </div>
+                <div class="stat-box">
+                    <p class="stat-value">3 года</p>
+                    <p class="stat-label">Стаж</p>
+                </div>
+                <div class="stat-box">
+                    <p class="stat-value">148</p>
+                    <p class="stat-label">Уроков</p>
                 </div>
             </div>
 
-            <!-- Функциональная кнопка добавления (пока показывает уведомление) -->
-            <button class="add-btn" onclick="addSlot()">+ Добавить урок</button>
+            <button class="action-btn" onclick="openStudents()">
+                👥 Открыть список учеников
+            </button>
+            <button class="action-btn secondary" onclick="editProfile()">
+                ✏️ Редактировать профиль
+            </button>
         </div>
 
-        <!-- Вкладка 2: Домашка -->
+        <!-- ================= ВКЛАДКА 2: РАСПИСАНИЕ ================= -->
+        <div id="tab-schedule" class="tab-content">
+            <h2>📅 Расписание на сегодня</h2>
+            <p style="color: var(--tg-theme-hint-color);">Раздел в разработке...</p>
+        </div>
+
+        <!-- ================= ВКЛАДКА 3: ДОМАШКА ================= -->
         <div id="tab-homework" class="tab-content">
             <h2>📚 Домашние задания</h2>
-            <p>Здесь появится список учеников, сдавших работу.</p>
-        </div>
-
-        <!-- Вкладка 3: Профиль -->
-        <div id="tab-profile" class="tab-content">
-            <!-- Вот здесь JS автоматически подставит имя из Телеграма -->
-            <h2 id="user-greeting">⚙️ Профиль</h2>
-            <p>Статус: <b>Преподаватель</b></p>
+            <p style="color: var(--tg-theme-hint-color);">Раздел в разработке...</p>
         </div>
 
     </div>
 
-    <!-- Нижняя навигация -->
+    <!-- Нижняя навигация (Профиль теперь первый) -->
     <div class="tab-bar">
-        <div class="tab-btn active" onclick="switchTab('tab-schedule', this)">
+        <div class="tab-btn active" onclick="switchTab('tab-profile', this)">
+            <span class="icon">👤</span><span>Профиль</span>
+        </div>
+        <div class="tab-btn" onclick="switchTab('tab-schedule', this)">
             <span class="icon">📅</span><span>Расписание</span>
         </div>
         <div class="tab-btn" onclick="switchTab('tab-homework', this)">
             <span class="icon">📚</span><span>Домашка</span>
-        </div>
-        <div class="tab-btn" onclick="switchTab('tab-profile', this)">
-            <span class="icon">⚙️</span><span>Профиль</span>
         </div>
     </div>
 
@@ -85,18 +159,30 @@
         tg.ready();
         tg.expand();
 
-        // ФУНКЦИОНАЛ 1: Автоматическое приветствие по имени
-        // Мы вытаскиваем объект user из данных Telegram
+        // МАГИЯ ТЕЛЕГРАМА: Достаем фото и имя
         const user = tg.initDataUnsafe?.user;
+        const nameEl = document.getElementById('user-name');
+        const avatarImg = document.getElementById('user-avatar');
+        const fallback = document.getElementById('avatar-fallback');
+
         if (user) {
-            // Если данные есть, подставляем имя пользователя (first_name)
-            document.getElementById('user-greeting').innerText = `👋 Здравствуйте, ${user.first_name}!`;
+            // Подставляем Имя и Фамилию
+            nameEl.innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            
+            // Если у пользователя есть аватарка, показываем её
+            if (user.photo_url) {
+                avatarImg.src = user.photo_url;
+                avatarImg.style.display = 'block';
+                fallback.style.display = 'none';
+            } else {
+                // Если фото скрыто, ставим первую букву имени на градиентный фон
+                fallback.innerText = user.first_name.charAt(0).toUpperCase();
+            }
         } else {
-            // Заглушка, если открыть файл просто в браузере на компе
-            document.getElementById('user-greeting').innerText = `👋 Здравствуйте, Репетитор!`;
+            nameEl.innerText = "Умный Репетитор";
         }
 
-        // ФУНКЦИОНАЛ 2: Переключение вкладок
+        // Переключение вкладок
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -105,11 +191,15 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // ФУНКЦИОНАЛ 3: Реакция на кнопку добавления урока
-        function addSlot() {
+        // Реакции на новые кнопки
+        function openStudents() {
             tg.HapticFeedback.impactOccurred('medium');
-            // Показываем нативное всплывающее окно Telegram
-            tg.showAlert("Здесь скоро откроется меню выбора времени и ученика!");
+            tg.showAlert("Тут откроется красивый список всех твоих учеников со статусом оплаты!");
+        }
+
+        function editProfile() {
+            tg.HapticFeedback.impactOccurred('light');
+            tg.showAlert("Настройки предметов и стоимости занятий.");
         }
     </script>
 </body>
