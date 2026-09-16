@@ -96,7 +96,12 @@
         tg.expand();
         tg.setHeaderColor('secondary_bg_color');
 
-                const urlParams = new URLSearchParams(window.location.search);
+        // Сначала инициализируем пользователя Телеграма
+        const user = tg.initDataUnsafe?.user;
+        const myId = user ? user.id : 12345;
+
+        // Теперь читаем параметры из URL
+        const urlParams = new URLSearchParams(window.location.search);
         const tutorName = urlParams.get('tutor_name') || "Преподаватель";
         const studentName = urlParams.get('student_name') || (user ? user.first_name : "Ученик");
         const subject = urlParams.get('subject') || "Занятие";
@@ -105,8 +110,6 @@
         
         let lessonDays = [];
         try { lessonDays = JSON.parse(rawDays); } catch(e) { lessonDays = [1, 3]; }
-
-        const myId = user ? user.id : 12345;
 
         document.getElementById('student-tg-id').innerText = `Telegram ID: ${myId}`;
         document.getElementById('student-name').innerText = studentName;
