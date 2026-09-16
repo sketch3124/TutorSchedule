@@ -314,25 +314,31 @@
             }
         }
 
-        async function saveToServer() {
+                async function saveToServer() {
             if (userRole !== 'tutor') return; // Ученик не может изменять расписание
             try {
-                await fetch(`${API_URL}/api/save_data`, {
+                let response = await fetch(`${API_URL}/api/save_data`, {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'ngrok-skip-browser-warning': '69420' // Пробиваем защитный экран ngrok
+                        'ngrok-skip-browser-warning': '69420' 
                     },
                     body: JSON.stringify({
-                        tutor_id: targetTutorId,
+                        tutor_id: parseInt(targetTutorId), // Тоже принудительно делаем числом
                         students: studentsList,
                         lessons: lessonsState
                     })
                 });
+                
+                if (!response.ok) {
+                    tg.showAlert("Ошибка сервера! Код: " + response.status);
+                }
             } catch (e) {
                 console.error("Ошибка сохранения на сервер:", e);
+                tg.showAlert("Ошибка соединения с ngrok: " + e.message);
             }
         }
+
 
 
         // Рендер информации ученика
