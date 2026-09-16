@@ -24,6 +24,8 @@
         .card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; width: 100%; }
         .profile-card { text-align: center; }
         .avatar-container { width: 72px; height: 72px; margin: 0 auto 12px auto; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), #3390ec); display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        .avatar-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .avatar-fallback { color: white; font-size: 28px; font-weight: bold; }
         .profile-name { font-size: 20px; font-weight: bold; margin: 0 0 4px 0; word-break: break-word; }
         .profile-role { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
@@ -69,6 +71,11 @@
         .slot-info b { color: var(--tg-theme-text-color, #000); }
         .slot-price { font-weight: bold; font-size: 13px; background: var(--tg-theme-secondary-bg-color, #f0f2f5); padding: 4px 8px; border-radius: 6px; }
 
+        /* Карточка домашнего задания для личного кабинета ученика */
+        .student-hw-card { background: var(--tg-theme-bg-color, #fff); border-radius: 14px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 4px solid #34c759; }
+        .student-hw-title { font-weight: bold; font-size: 16px; margin-bottom: 4px; }
+        .student-hw-desc { font-size: 13px; color: var(--tg-theme-hint-color, #666); margin-bottom: 10px; }
+
         .days-selector { display: flex; gap: 4px; margin-bottom: 12px; }
         .day-check { flex: 1; padding: 8px 0; text-align: center; background: var(--tg-theme-bg-color, #fff); border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: 1px solid var(--tg-theme-hint-color, #ccc); user-select: none; }
         .day-check.selected { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
@@ -86,30 +93,54 @@
 
     <div class="content-area">
         
-        <!-- ПРОФИЛЬ -->
+        <!-- ПРОФИЛЬ / КАБИНЕТ (Адаптируется под роль) -->
         <div id="tab-profile" class="tab-content">
-            <div class="card profile-card">
-                <h2 id="user-name" class="profile-name">Загрузка...</h2>
-                <p id="user-subjects" class="profile-role">Преподаватель</p>
-            </div>
             
-            <div class="card">
-                <div class="goal-header"><span>Заработано / Цель</span><span id="finance-text" style="color: var(--accent-color);">0 / 0 ₽</span></div>
-                <div class="progress-bg"><div id="finance-progress" class="progress-fill"></div></div>
+            <!-- Блок для репетитора -->
+            <div id="tutor-profile-view">
+                <div class="card profile-card">
+                    <div class="avatar-container"><img id="user-avatar" src="" alt="Avatar"><span id="avatar-fallback" class="avatar-fallback">В</span></div>
+                    <h2 id="user-name" class="profile-name">Загрузка...</h2>
+                    <p id="user-subjects" class="profile-role">Преподаватель</p>
+                </div>
+                
+                <div class="card">
+                    <div class="goal-header"><span>Заработано / Цель</span><span id="finance-text" style="color: var(--accent-color);">0 / 0 ₽</span></div>
+                    <div class="progress-bg"><div id="finance-progress" class="progress-fill"></div></div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-box"><p id="stat-students" class="stat-value">0</p><p class="stat-label">Учеников</p></div>
+                    <div class="stat-box"><p id="stat-earned" class="stat-value">0 ₽</p><p class="stat-label">Факт доход</p></div>
+                    <div class="stat-box"><p id="stat-attendance" class="stat-value">100%</p><p class="stat-label">Явка</p></div>
+                </div>
+                <button class="action-btn" onclick="openModal('modal-students')">👥 Список учеников</button>
+                <button class="action-btn green" style="margin-top: 10px;" onclick="openPaymentsModal()">💳 Учет оплат и долги</button>
+                <div class="btn-group" style="display:flex; gap:8px; margin-top:10px;">
+                    <button class="action-btn secondary" onclick="openModal('modal-settings')">⚙️ Настройки</button>
+                    <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
+                </div>
+                <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
             </div>
 
-            <div class="stats-row">
-                <div class="stat-box"><p id="stat-students" class="stat-value">0</p><p class="stat-label">Учеников</p></div>
-                <div class="stat-box"><p id="stat-earned" class="stat-value">0 ₽</p><p class="stat-label">Факт доход</p></div>
-                <div class="stat-box"><p id="stat-attendance" class="stat-value">100%</p><p class="stat-label">Явка</p></div>
+            <!-- Блок для личного кабинета студента -->
+            <div id="student-profile-view" style="display: none;">
+                <div class="card profile-card">
+                    <h2 id="student-cabinet-name" class="profile-name">Личный кабинет ученика</h2>
+                    <p class="profile-role">Ваш статус и баланс занятий</p>
+                </div>
+                
+                <div class="card">
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px;">Статус оплаты занятий</div>
+                    <div id="student-payment-status" style="font-size: 15px; color: #34c759; font-weight: bold;">Все занятия оплачены</div>
+                </div>
+
+                <div class="card">
+                    <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px;">Ваш преподаватель</div>
+                    <div id="student-tutor-info" style="font-size: 14px; color: var(--tg-theme-hint-color);">Связь через бота</div>
+                </div>
             </div>
-            <button class="action-btn" onclick="openModal('modal-students')">👥 Список учеников</button>
-            <button class="action-btn green" style="margin-top: 10px;" onclick="openPaymentsModal()">💳 Учет оплат и долги</button>
-            <div class="btn-group" style="display:flex; gap:8px; margin-top:10px;">
-                <button class="action-btn secondary" onclick="openModal('modal-settings')">⚙️ Настройки</button>
-                <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
-            </div>
-            <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
+
         </div>
 
         <!-- РАСПИСАНИЕ -->
@@ -124,13 +155,19 @@
             <div id="slots-container"></div>
         </div>
 
-        <!-- ДОМАШКА -->
+        <!-- ДОМАШКА (Кабинет заданий ученика) -->
         <div id="tab-homework" class="tab-content">
-            <h2>📚 Домашка</h2>
-            <p style="color: var(--tg-theme-hint-color);">Здесь будут задания учеников.</p>
+            <h2>📚 Домашние задания</h2>
+            <div id="homework-container">
+                <div class="student-hw-card">
+                    <div class="student-hw-title">Вводное задание</div>
+                    <div class="student-hw-desc">Здесь будут отображаться домашние задания, которые назначит преподаватель.</div>
+                    <span style="font-size:11px; background:#34c759; color:white; padding:3px 8px; border-radius:4px; font-weight:bold;">Активно</span>
+                </div>
+            </div>
         </div>
 
-        <!-- ================= МОДАЛКИ ================= -->
+        <!-- ================= МОДАЛКИ (для преподавателя) ================= -->
         
         <div id="modal-students" class="modal">
             <h2>Мои ученики</h2>
@@ -138,7 +175,6 @@
             <div id="students-container"></div>
         </div>
 
-        <!-- Добавление ученика с Telegram ID -->
         <div id="modal-add-student" class="modal">
             <h2 id="st-modal-title">Новый ученик</h2>
             <input type="hidden" id="editing-st-index" value="-1">
@@ -146,13 +182,13 @@
             <input type="text" id="new-st-name" class="input-field" placeholder="Например: Алексей">
             
             <label class="input-label">Telegram ID ученика (число)</label>
-            <input type="number" id="new-st-tgid" class="input-field" placeholder="Например: 123456789">
+            <input type="number" id="new-st-tgid" class="input-field" placeholder="123456789">
 
             <label class="input-label">Предмет</label>
             <input type="text" id="new-st-subject" class="input-field" placeholder="Например: C++">
 
-            <label class="input-label">Ставка (₽/час)</label>
-            <input type="number" id="new-st-rate" class="input-field" placeholder="Если пусто, общая ставка">
+            <label class="input-label">Индивидуальная ставка (₽/час)</label>
+            <input type="number" id="new-st-rate" class="input-field" placeholder="Если пусто, берется общая ставка">
 
             <label class="input-label">Время урока</label>
             <input type="time" id="new-st-time" class="input-field" value="15:00">
@@ -171,23 +207,17 @@
             <button class="action-btn" onclick="saveStudentData()">Сохранить ученика</button>
         </div>
 
-        <div id="modal-payments" class="modal">
-            <h2>Учет оплат и долги</h2>
-            <div id="payments-list-container"></div>
-        </div>
+        <div id="modal-payments" class="modal"><h2>Учет оплат и долги</h2><div id="payments-list-container"></div></div>
 
         <div id="modal-slot-action" class="modal">
             <h2 id="slot-modal-title">Управление уроком</h2>
             <p id="slot-modal-subtitle" style="color: var(--tg-theme-hint-color); margin-bottom: 15px; font-size:13px;"></p>
-            
             <button id="btn-done-toggle" class="action-btn secondary" style="margin-bottom: 8px;" onclick="toggleLessonDone()">✅ Урок состоялся</button>
             <button id="btn-pay-toggle" class="action-btn green" style="margin-bottom: 12px;" onclick="togglePaymentStatus()">💳 Отметить оплаченным</button>
-            
-            <label class="input-label">Перенести на время:</label>
+            <label class="input-label">Разово перенести на время:</label>
             <input type="time" id="reschedule-time-input" class="input-field">
             <button class="action-btn secondary" style="margin-bottom: 12px;" onclick="rescheduleLesson()">🔄 Перенести на сегодня</button>
-
-            <button class="action-btn red" onclick="deleteTodayLesson()">🗑 Удалить только на сегодня</button>
+            <button class="action-btn red" onclick="deleteTodayLesson()">🗑 Удалить урок только на сегодня</button>
         </div>
 
         <div id="modal-settings" class="modal">
@@ -201,16 +231,16 @@
             <h2>Профиль и Финансы</h2>
             <label class="input-label">Имя и Фамилия</label><input type="text" id="edit-name-input" class="input-field">
             <label class="input-label">Предметы</label><input type="text" id="edit-subjects-input" class="input-field">
-            <label class="input-label">Ссылка на визитку бота</label><input type="text" id="edit-bot-link" class="input-field">
-            <label class="input-label">Ставка по умолчанию (₽/час)</label><input type="number" id="edit-rate-input" class="input-field">
-            <label class="input-label">Цель на месяц (₽)</label><input type="number" id="edit-goal-input" class="input-field">
+            <label class="input-label">Ссылка на бота</label><input type="text" id="edit-bot-link" class="input-field">
+            <label class="input-label">Общая ставка по умолчанию (₽/час)</label><input type="number" id="edit-rate-input" class="input-field">
+            <label class="input-label">Финансовая цель на месяц (₽)</label><input type="number" id="edit-goal-input" class="input-field">
             <button class="action-btn" onclick="saveProfile()">Сохранить</button>
         </div>
     </div>
 
     <!-- Навигация -->
     <div class="tab-bar" id="bottom-nav">
-        <div class="tab-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span>Профиль</span></div>
+        <div class="tab-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span id="nav-profile-label">Профиль</span></div>
         <div class="tab-btn active" onclick="switchTab('tab-schedule', this)"><span class="icon">📅</span><span>Расписание</span></div>
         <div class="tab-btn" onclick="switchTab('tab-homework', this)"><span class="icon">📚</span><span>Домашка</span></div>
     </div>
@@ -221,44 +251,54 @@
         tg.expand();
         tg.setHeaderColor('secondary_bg_color');
 
-        // Считываем параметры из URL (роль и tutor_id)
         const urlParams = new URLSearchParams(window.location.search);
         const userRole = urlParams.get('role') || 'tutor'; // 'tutor' или 'student'
-        const targetTutorId = urlParams.get('tutor_id');
+        const currentStudentId = urlParams.get('student_id');
 
         const user = tg.initDataUnsafe?.user;
-        let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Пользователь";
+        let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Умный Репетитор";
         
         let savedName = localStorage.getItem('tutorName') || defaultName;
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = Number(localStorage.getItem('tutorRate') || 1500);
         let savedGoal = Number(localStorage.getItem('tutorGoal') || 60000);
         let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
-        let savedBotLink = localStorage.getItem('tutorBotLink') || `https://t.me/TutorScheduleBot?start=tutor_${user?.id || 123}`;
+        let savedBotLink = localStorage.getItem('tutorBotLink') || "https://t.me/TutorScheduleBot";
 
         let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [
             {name: 'Алексей', tgId: '', subject: 'C++', rate: '', time: '15:00', days: [1, 3]}
         ];
+        
         let lessonsState = JSON.parse(localStorage.getItem('tutorLessons')) || {}; 
         let selectedDateStr = formatDateKey(new Date());
 
         document.documentElement.style.setProperty('--accent-color', savedAccent);
 
-        // --- АДАПТАЦИЯ ПОД РОЛЬ (ПРЕПОДАВАТЕЛЬ / УЧЕНИК) ---
+        // --- АДАПТАЦИЯ ПОД РОЛЬ СТУДЕНТА ---
         if (userRole === 'student') {
-            // Если зашел ученик, скрываем вкладку Профиль (или делаем её страницей информации о преподавателе)
-            document.querySelectorAll('.tab-btn')[0].style.display = 'none'; // Скрываем кнопку профиля
-            // Можем переключить на расписание
+            document.getElementById('tutor-profile-view').style.display = 'none';
+            document.getElementById('student-profile-view').style.display = 'block';
+            document.getElementById('nav-profile-label').innerText = "Кабинет";
+            
+            // Находим имя студента по его ID в списке
+            let myStudent = studentsList.find(s => s.tgId == currentStudentId);
+            if (myStudent) {
+                document.getElementById('student-cabinet-name').innerText = myStudent.name;
+            } else if (user) {
+                document.getElementById('student-cabinet-name').innerText = user.first_name;
+            }
         }
 
         // --- КАЛЕНДАРЬ ---
         function buildCalendar() {
             const slider = document.getElementById('calendar-slider');
             slider.innerHTML = '';
+            
             const today = new Date();
             for (let i = 0; i < 180; i++) {
                 let d = new Date();
                 d.setDate(today.getDate() + i);
+                
                 let dateKey = formatDateKey(d);
                 let dayNum = d.getDate();
                 let monthNames = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
@@ -267,7 +307,12 @@
 
                 let div = document.createElement('div');
                 div.className = `cal-day ${dateKey === selectedDateStr ? 'active' : ''}`;
-                div.innerHTML = `<span>${weekDays[d.getDay()]}</span><b>${dayNum}</b><small>${monthNames[d.getMonth()]}</small><div class="day-badge ${count === 0 ? 'empty' : ''}">${count}</div>`;
+                div.innerHTML = `
+                    <span>${weekDays[d.getDay()]}</span>
+                    <b>${dayNum}</b>
+                    <small>${monthNames[d.getMonth()]}</small>
+                    <div class="day-badge ${count === 0 ? 'empty' : ''}">${count}</div>
+                `;
                 div.onclick = () => selectCalendarDay(d, dateKey, div);
                 slider.appendChild(div);
             }
@@ -276,6 +321,7 @@
         function getLessonsCountForDate(dateKey, dayOfWeek) {
             let count = 0;
             studentsList.forEach((st, stIndex) => {
+                if (userRole === 'student' && currentStudentId && st.tgId && st.tgId !== currentStudentId) return;
                 if (st.days && st.days.includes(dayOfWeek)) {
                     let key = `${dateKey}_${stIndex}`;
                     if (!lessonsState[key] || !lessonsState[key].deleted) count++;
@@ -296,6 +342,7 @@
             document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
             selectedDateStr = dateKey;
+            
             let options = { day: 'numeric', month: 'long', weekday: 'long' };
             document.getElementById('selected-date-title').innerText = "Расписание на " + dateObj.toLocaleDateString('ru-RU', options);
             renderSlotsForSelectedDate();
@@ -323,11 +370,14 @@
         function renderSlotsForSelectedDate() {
             const container = document.getElementById('slots-container');
             container.innerHTML = '';
+
             let targetDate = new Date(selectedDateStr);
             let dayOfWeek = targetDate.getDay();
 
             let dayLessons = [];
             studentsList.forEach((st, stIndex) => {
+                if (userRole === 'student' && currentStudentId && st.tgId && st.tgId !== currentStudentId) return;
+
                 if (st.days && st.days.includes(dayOfWeek)) {
                     let key = `${selectedDateStr}_${stIndex}`;
                     if (lessonsState[key] && lessonsState[key].deleted) return;
@@ -337,7 +387,7 @@
                     let isDone = lessonsState[key]?.done || false;
                     let stRate = (st.rate !== '' && !isNaN(st.rate)) ? Number(st.rate) : savedRate;
 
-                    dayLessons.push({ stIndex, name: st.name, tgId: st.tgId, subject: st.subject, time: lessonTime, paid: isPaid, done: isDone, rate: stRate, key });
+                    dayLessons.push({ stIndex, name: st.name, subject: st.subject, time: lessonTime, paid: isPaid, done: isDone, rate: stRate, key });
                 }
             });
 
@@ -345,7 +395,7 @@
 
             if (dayLessons.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:var(--tg-theme-hint-color); padding: 30px 0;">На этот день нет занятий</p>';
-                updateFinanceStats();
+                if (userRole === 'tutor') updateFinanceStats();
                 return;
             }
 
@@ -353,8 +403,9 @@
                 let statusClass = les.done ? 'done' : (les.paid ? 'booked' : 'debt');
                 let priceText = les.done ? 'Состоялся' : (les.paid ? `${les.rate} ₽` : 'Долг');
                 
-                // Если зашел ученик, запрещаем кликать на чужие слоты для администрирования
-                let clickAction = userRole === 'tutor' ? `openSlotAction('${les.key}', '${les.name}', '${les.time}')` : `tg.showAlert('Занятие ученика: ${les.name}')`;
+                let clickAction = userRole === 'tutor' 
+                    ? `openSlotAction('${les.key}', '${les.name}', '${les.time}')` 
+                    : `tg.showAlert('Занятие: ${les.subject} в ${les.time}')`;
 
                 container.innerHTML += `
                     <div class="slot ${statusClass}" onclick="${clickAction}">
@@ -365,11 +416,12 @@
                         <div class="slot-price" style="color: ${les.paid || les.done ? 'inherit' : '#ff3b30'};">${priceText}</div>
                     </div>`;
             });
-            updateFinanceStats();
+            if (userRole === 'tutor') updateFinanceStats();
         }
 
         // --- УПРАВЛЕНИЕ УРОКОМ ---
         let activeLessonKey = null;
+
         function openSlotAction(key, name, time) {
             if (userRole !== 'tutor') return;
             activeLessonKey = key;
@@ -383,9 +435,12 @@
             let isDone = lessonsState[key].done;
 
             let payBtn = document.getElementById('btn-pay-toggle');
-            payBtn.innerText = isPaid ? "❌ Снять оплату" : "💳 Отметить оплаченным";
+            payBtn.innerText = isPaid ? "❌ Снять отметку об оплате" : "💳 Отметить оплаченным";
+            payBtn.className = isPaid ? "action-btn secondary" : "action-btn green";
+
             let doneBtn = document.getElementById('btn-done-toggle');
             doneBtn.innerText = isDone ? "↩️ Вернуть в активные" : "✅ Урок состоялся";
+            doneBtn.className = isDone ? "action-btn secondary" : "action-btn green";
 
             openModal('modal-slot-action');
         }
@@ -432,7 +487,9 @@
 
         // --- ФИНАНСЫ ---
         function updateFinanceStats() {
+            if (userRole !== 'tutor') return;
             let totalEarned = 0;
+            
             Object.keys(lessonsState).forEach(k => {
                 let les = lessonsState[k];
                 if(les && les.paid && !les.deleted) {
@@ -448,11 +505,13 @@
 
             document.getElementById('stat-earned').innerText = totalEarned + " ₽";
             document.getElementById('finance-text').innerText = `${totalEarned} / ${savedGoal} ₽`;
+            
             let percent = savedGoal > 0 ? (totalEarned / savedGoal) * 100 : 0;
             if (percent > 100) percent = 100;
             document.getElementById('finance-progress').style.width = percent + '%';
 
-            let total = 0, doneCount = 0;
+            let total = 0;
+            let doneCount = 0;
             Object.values(lessonsState).forEach(les => {
                 if(!les.deleted) { total++; if(les.done) doneCount++; }
             });
@@ -464,9 +523,12 @@
             tg.HapticFeedback.impactOccurred('medium');
             const container = document.getElementById('payments-list-container');
             container.innerHTML = '';
+            
             studentsList.forEach((st, stIndex) => {
-                let unpaidSum = 0, paidSum = 0;
+                let unpaidSum = 0;
+                let paidSum = 0;
                 let stRate = (st.rate !== '' && !isNaN(st.rate)) ? Number(st.rate) : savedRate;
+
                 Object.keys(lessonsState).forEach(k => {
                     if(k.endsWith(`_${stIndex}`)) {
                         let les = lessonsState[k];
@@ -475,13 +537,19 @@
                         }
                     }
                 });
+
                 let statusHtml = unpaidSum > 0 ? `<span style="color:#ff3b30; font-weight:bold;">Долг: -${unpaidSum} ₽</span>` : `<span style="color:#34c759; font-weight:bold;">Все оплачено</span>`;
-                container.innerHTML += `<div class="list-item"><div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">ID: ${st.tgId || 'нет'}</span></div><div style="text-align:right;">${statusHtml}<br><span style="font-size:11px; color:gray;">Получено: ${paidSum} ₽</span></div></div>`;
+
+                container.innerHTML += `
+                    <div class="list-item">
+                        <div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">Ставка: ${stRate} ₽/ч</span></div>
+                        <div style="text-align:right;">${statusHtml}<br><span style="font-size:11px; color:gray;">Получено: ${paidSum} ₽</span></div>
+                    </div>`;
             });
             openModal('modal-payments');
         }
 
-        // --- УЧЕНИКИ И TG ID ---
+        // --- УЧЕНИКИ ---
         function openAddStudentModal() {
             document.getElementById('st-modal-title').innerText = "Новый ученик";
             document.getElementById('editing-st-index').value = "-1";
@@ -545,6 +613,7 @@
         }
 
         function renderStudents() {
+            if (userRole !== 'tutor') return;
             const container = document.getElementById('students-container');
             container.innerHTML = '';
             studentsList.forEach((st, index) => {
@@ -574,6 +643,7 @@
 
         // --- ПРОФИЛЬ И НАСТРОЙКИ ---
         function updateUI() {
+            if (userRole !== 'tutor') return;
             document.getElementById('user-name').innerText = savedName;
             document.getElementById('edit-name-input').value = savedName;
             document.getElementById('edit-subjects-input').value = savedSubjects;
