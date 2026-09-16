@@ -34,6 +34,11 @@
         .cal-day span { font-size: 10px; color: var(--tg-theme-hint-color, #888); text-transform: uppercase; }
         .cal-day b { font-size: 15px; }
         .cal-day.active { border-color: var(--accent-color); background-color: rgba(51, 144, 236, 0.08); }
+
+        .slot { background-color: var(--tg-theme-bg-color, #fff); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #34c759; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .slot-time { font-size: 15px; font-weight: bold; margin-bottom: 2px; }
+        .slot-info { font-size: 13px; color: var(--tg-theme-hint-color, #888); }
+        .slot-price { font-weight: bold; font-size: 13px; background: var(--tg-theme-secondary-bg-color, #f0f2f5); padding: 4px 8px; border-radius: 6px; color: #34c759; }
     </style>
 </head>
 <body>
@@ -49,7 +54,7 @@
             
             <div class="card">
                 <div style="font-size: 15px; font-weight: bold; margin-bottom: 8px;">👨‍🏫 Мой преподаватель</div>
-                <div id="tutor-info-box" style="font-size: 14px; color: var(--tg-theme-text-color);">Связь активна ✓</div>
+                <div id="tutor-info-box" style="font-size: 14px; color: var(--tg-theme-text-color);">Загрузка...</div>
             </div>
 
             <div class="card">
@@ -70,9 +75,11 @@
         <!-- ДОМАШНИЕ ЗАДАНИЯ -->
         <div id="tab-homework" class="tab-content">
             <h2>📚 Домашние задания</h2>
-            <div class="card">
-                <div style="font-weight: bold; margin-bottom: 4px;">Текущие задания</div>
-                <div style="font-size: 13px; color: gray;">Здесь будут появляться домашние работы от преподавателя.</div>
+            <div id="student-homework-container">
+                <div class="card">
+                    <div style="font-weight: bold; margin-bottom: 4px;">Текущие задания</div>
+                    <div style="font-size: 13px; color: gray;">Нет новых заданий.</div>
+                </div>
             </div>
         </div>
     </div>
@@ -91,6 +98,9 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const tutorId = urlParams.get('tutor_id');
+        const tutorName = urlParams.get('tutor_name') || "Преподаватель";
+        const studentId = urlParams.get('student_id');
+
         const user = tg.initDataUnsafe?.user;
         const myId = user ? user.id : 12345;
 
@@ -99,9 +109,12 @@
             document.getElementById('student-name').innerText = user.first_name;
         }
 
-        if (tutorId) {
-            document.getElementById('tutor-info-box').innerHTML = `<b>ID преподавателя:</b> ${tutorId}<br><span style="color: #34c759; font-size: 12px; font-weight: bold;">Связь установлена ✓</span>`;
-        }
+        // Выводим имя преподавателя в профиль
+        document.getElementById('tutor-info-box').innerHTML = `<b>${decodeURIComponent(tutorName)}</b><br><span style="color: #34c759; font-size: 12px; font-weight: bold;">Связь активна ✓</span>`;
+
+        // Получаем расписание ученика из localStorage репетитора (или симулируем привязку по ID)
+        let allStudents = JSON.parse(localStorage.getItem('tutorStudents')) || [];
+        let myStudentData = allStudents.find(s => s.tgId == myId || s.username === user?.username?.toLowerCase() || true); // fallback на первую запись для теста
 
         let selectedDateStr = formatDateKey(new Date());
 
@@ -132,12 +145,26 @@
             if(element) element.classList.add('active');
             selectedDateStr = dateKey;
             document.getElementById('selected-date-title').innerText = "Занятия на " + dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
-            renderStudentSlots();
+            renderStudentSlots(dateObj.getDay());
         }
 
-        function renderStudentSlots() {
+        function renderStudentSlots(dayOfWeek) {
             const container = document.getElementById('slots-container');
-            container.innerHTML = '<p style="text-align:center; color:gray; padding: 20px;">На этот день нет занятий</p>';
+            container.innerHTML = '';
+
+            // Проверяем, есть ли у ученика урок в этот день недели
+            if (myStudentData && myStudentData.days && myStudentData.days.includes(dayOfWeek)) {
+                container.innerHTML = `
+                    <div class="slot">
+                        <div>
+                            <div class="slot-time">${myStudentData.time || '15:00'}</div>
+                            <div class="slot-info"><b>${myStudentData.subject || 'Занятие'}</b> • ${decodeURIComponent(tutorName)}</div>
+                        </div>
+                        <div class="slot-price">Запланировано</div>
+                    </div>`;
+            } else {
+                container.innerHTML = '<p style="text-align:center; color:gray; padding: 20px;">На этот день нет занятий</p>';
+            }
         }
 
         function switchTab(tabId, btnElement) {
@@ -149,7 +176,7 @@
         }
 
         buildCalendar();
-        renderStudentSlots();
+        renderStudentSlots(new Date().getDay());
     </script>
 </body>
 </html>
