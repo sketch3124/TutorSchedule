@@ -44,12 +44,22 @@
         .stat-value { font-size: 20px; font-weight: bold; color: var(--tg-theme-link-color, #007aff); margin: 0 0 4px 0; }
         .stat-label { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
-        /* Кнопки */
+        /* ================= КНОПКИ (Исправленные фоны) ================= */
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
+        
+        /* Главная синяя кнопка */
         .action-btn { background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.1s; }
         .action-btn:active { transform: scale(0.97); }
-        .action-btn.green { background-color: #34c759; }
-        .action-btn.secondary { background-color: var(--tg-theme-secondary-bg-color, #e5e5ea); color: var(--tg-theme-text-color, #000); flex: 1; }
+        
+        /* Зеленая кнопка (Оплаты) */
+        .action-btn.green { background-color: #34c759; color: #fff; }
+        
+        /* Вторичные кнопки (Настройки, Изменить, Визитка) */
+        .action-btn.secondary { 
+            background-color: rgba(142, 142, 147, 0.15); /* Идеальный полупрозрачный фон для любой темы */
+            color: var(--tg-theme-text-color, #000); 
+            flex: 1; 
+        }
 
         /* Тумблеры */
         .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--tg-theme-hint-color, #eee); }
@@ -107,6 +117,9 @@
                 <button class="action-btn secondary" onclick="openModal('modal-settings')">⚙️ Настройки</button>
                 <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
             </div>
+            
+            <!-- КНОПКА ВИЗИТКИ ВЕРНУЛАСЬ -->
+            <button class="action-btn secondary" style="margin-top: 10px;" onclick="tg.showAlert('Ссылка скопирована! Отправь её новому ученику.')">🔗 Поделиться визиткой</button>
         </div>
 
         <!-- РАСПИСАНИЕ И ДОМАШКА -->
@@ -161,22 +174,20 @@
         tg.ready();
         tg.expand();
 
-        // 1. НАСТРОЙКА ТЕМЫ (Красим верхнюю шапку в цвет фона)
+        // 1. НАСТРОЙКА ТЕМЫ
         tg.setHeaderColor('secondary_bg_color');
 
-        // 2. РАБОТА С ПАМЯТЬЮ (LocalStorage)
+        // 2. РАБОТА С ПАМЯТЬЮ
         const user = tg.initDataUnsafe?.user;
         let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Умный Репетитор";
         
-        // Загружаем данные из памяти (или берем стандартные)
         let savedName = localStorage.getItem('tutorName') || defaultName;
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = localStorage.getItem('tutorRate') || "1500";
         
         let settingRemind = localStorage.getItem('setRemind') === 'true';
-        let settingPay = localStorage.getItem('setPay') !== 'false'; // По умолчанию включено
+        let settingPay = localStorage.getItem('setPay') !== 'false';
 
-        // Применяем данные к интерфейсу
         document.getElementById('user-name').innerText = savedName;
         document.getElementById('edit-name-input').value = savedName;
         
@@ -189,7 +200,6 @@
         document.getElementById('setting-remind').checked = settingRemind;
         document.getElementById('setting-pay').checked = settingPay;
 
-        // Аватарка (берем из ТГ)
         if (user && user.photo_url) {
             document.getElementById('user-avatar').src = user.photo_url;
             document.getElementById('user-avatar').style.display = 'block';
@@ -198,7 +208,6 @@
             document.getElementById('avatar-fallback').innerText = savedName.charAt(0).toUpperCase();
         }
 
-        // Анимация прогресс-бара при запуске
         setTimeout(() => {
             document.getElementById('finance-progress').style.width = '75%';
         }, 300);
@@ -209,12 +218,10 @@
             const newSubjects = document.getElementById('edit-subjects-input').value;
             const newRate = document.getElementById('edit-rate-input').value;
             
-            // Сохраняем в память браузера
             localStorage.setItem('tutorName', newName);
             localStorage.setItem('tutorSubjects', newSubjects);
             localStorage.setItem('tutorRate', newRate);
             
-            // Обновляем экран
             document.getElementById('user-name').innerText = newName;
             document.getElementById('user-subjects').innerText = "Преподаватель (" + newSubjects + ")";
             document.getElementById('user-rate').innerText = "Ставка: " + newRate + " ₽";
@@ -226,7 +233,6 @@
         function saveSettings() {
             const remind = document.getElementById('setting-remind').checked;
             const pay = document.getElementById('setting-pay').checked;
-            
             localStorage.setItem('setRemind', remind);
             localStorage.setItem('setPay', pay);
             tg.HapticFeedback.selectionChanged();
