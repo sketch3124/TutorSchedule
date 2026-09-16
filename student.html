@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Кабинет Ученика</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root { --accent-color: var(--tg-theme-button-color, #3390ec); }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); color: var(--tg-theme-text-color, #000000); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .content-area { flex-grow: 1; overflow-y: auto; padding: 16px; position: relative; width: 100%; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-bg-color, #ffffff); padding-bottom: env(safe-area-inset-bottom); z-index: 10; flex-shrink: 0; }
+        .tab-btn { flex: 1; padding: 10px 0 14px 0; text-align: center; font-size: 11px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .tab-btn .icon { font-size: 20px; filter: grayscale(100%); opacity: 0.6; }
+        .tab-btn.active { color: var(--accent-color); font-weight: 600; }
+        .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; }
+
+        .card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; width: 100%; }
+        .profile-card { text-align: center; }
+        .profile-name { font-size: 20px; font-weight: bold; margin: 0 0 4px 0; }
+        .profile-role { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin: 0; }
+
+        .calendar-header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .calendar-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; flex-grow: 1; margin-right: 8px; }
+        .calendar-nav::-webkit-scrollbar { display: none; }
+        
+        .cal-day { min-width: 50px; padding: 8px 0; background-color: var(--tg-theme-bg-color, #fff); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 2px solid transparent; }
+        .cal-day span { font-size: 10px; color: var(--tg-theme-hint-color, #888); text-transform: uppercase; }
+        .cal-day b { font-size: 15px; }
+        .cal-day.active { border-color: var(--accent-color); background-color: rgba(51, 144, 236, 0.08); }
+
+        .slot { background-color: var(--tg-theme-bg-color, #fff); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border-left: 4px solid #34c759; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+        .slot-time { font-size: 15px; font-weight: bold; margin-bottom: 2px; }
+        .slot-info { font-size: 13px; color: var(--tg-theme-hint-color, #888); }
+        .slot-price { font-weight: bold; font-size: 13px; background: var(--tg-theme-secondary-bg-color, #f0f2f5); padding: 4px 8px; border-radius: 6px; color: #34c759; }
+    </style>
+</head>
+<body>
+
+    <div class="content-area">
+        
+        <!-- ПРОФИЛЬ УЧЕНИКА -->
+        <div id="tab-profile" class="tab-content">
+            <div class="card profile-card">
+                <h2 id="student-name" class="profile-name">Ученик</h2>
+                <p id="student-tg-id" class="profile-role">Telegram ID: загрузка...</p>
+            </div>
+            
+            <div class="card">
+                <div style="font-size: 15px; font-weight: bold; margin-bottom: 8px;">👨‍🏫 Мой преподаватель</div>
+                <div id="tutor-info-box" style="font-size: 13px; color: var(--tg-theme-hint-color);">Связь установлена через визитку</div>
+            </div>
+
+            <div class="card">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px;">Статус обучения</div>
+                <div style="font-size: 15px; color: #34c759; font-weight: bold;">Активный доступ</div>
+            </div>
+        </div>
+
+        <!-- РАСПИСАНИЕ УЧЕНИКА -->
+        <div id="tab-schedule" class="tab-content active">
+            <div class="calendar-header-panel">
+                <div class="calendar-nav" id="calendar-slider"></div>
+            </div>
+            <h3 id="selected-date-title" style="margin: 6px 0 12px 0; font-size: 15px;">Мои занятия</h3>
+            <div id="slots-container"></div>
+        </div>
+
+        <!-- ДОМАШНИЕ ЗАДАНИЯ -->
+        <div id="tab-homework" class="tab-content">
+            <h2>📚 Домашние задания</h2>
+            <div class="card">
+                <div style="font-weight: bold; margin-bottom: 4px;">Текущие задания</div>
+                <div style="font-size: 13px; color: gray;">Здесь будут появляться домашние работы от твоего преподавателя.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-bar">
+        <div class="tab-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span>Профиль</span></div>
+        <div class="tab-btn active" onclick="switchTab('tab-schedule', this)"><span class="icon">📅</span><span>Расписание</span></div>
+        <div class="tab-btn" onclick="switchTab('tab-homework', this)"><span class="icon">📚</span><span>Домашка</span></div>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+        tg.setHeaderColor('secondary_bg_color');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const tutorId = urlParams.get('tutor_id');
+        const user = tg.initDataUnsafe?.user;
+        const myId = user ? user.id : 12345;
+
+        document.getElementById('student-tg-id').innerText = `Telegram ID: ${myId}`;
+        if (user && user.first_name) {
+            document.getElementById('student-name').innerText = user.first_name;
+        }
+
+        if (tutorId) {
+            document.getElementById('tutor-info-box').innerHTML = `<b>ID преподавателя:</b> ${tutorId}<br><span style="color: gray; font-size: 12px;">Синхронизировано</span>`;
+        }
+
+        let selectedDateStr = formatDateKey(new Date());
+
+        function buildCalendar() {
+            const slider = document.getElementById('calendar-slider');
+            slider.innerHTML = '';
+            const today = new Date();
+            for (let i = 0; i < 30; i++) {
+                let d = new Date();
+                d.setDate(today.getDate() + i);
+                let dateKey = formatDateKey(d);
+                let weekDays = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+
+                let div = document.createElement('div');
+                div.className = `cal-day ${dateKey === selectedDateStr ? 'active' : ''}`;
+                div.innerHTML = `<span>${weekDays[d.getDay()]}</span><b>${d.getDate()}</b>`;
+                div.onclick = () => selectCalendarDay(d, dateKey, div);
+                slider.appendChild(div);
+            }
+        }
+
+        function formatDateKey(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function selectCalendarDay(dateObj, dateKey, element) {
+            document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('active'));
+            if(element) element.classList.add('active');
+            selectedDateStr = dateKey;
+            document.getElementById('selected-date-title').innerText = "Занятия на " + dateObj.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+            renderStudentSlots();
+        }
+
+        function renderStudentSlots() {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '<p style="text-align:center; color:gray; padding: 20px;">На этот день нет занятий</p>';
+        }
+
+        function switchTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        buildCalendar();
+        renderStudentSlots();
+    </script>
+</body>
+</html>
