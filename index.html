@@ -69,9 +69,10 @@
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; animation: slideIn 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .list-item { background: var(--tg-theme-bg-color, #fff); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--tg-theme-hint-color, #ccc); background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); font-size: 16px; box-sizing: border-box; outline: none; }
+        
+        .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--tg-theme-hint-color, #ccc); background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); font-size: 16px; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
         .input-field:focus { border-color: var(--accent-color); }
-        .input-label { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin-bottom: 5px; display: block; }
+        .input-label { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin-bottom: 5px; display: block; font-weight: 500; }
         
         .delete-btn { background: none; border: none; color: #ff3b30; font-size: 24px; cursor: pointer; padding: 0 10px; }
     </style>
@@ -115,7 +116,7 @@
                 <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
             </div>
             
-            <!-- Настоящая визитка -->
+            <!-- Кнопка вызова обновленной визитки -->
             <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
         </div>
 
@@ -125,16 +126,12 @@
 
         <!-- ================= МОДАЛКИ ================= -->
         
-        <!-- Окно: Ученики (Динамическое) -->
         <div id="modal-students" class="modal">
             <h2>Мои ученики</h2>
             <button class="action-btn secondary" style="margin-bottom: 15px;" onclick="openModal('modal-add-student')">+ Добавить ученика</button>
-            <div id="students-container">
-                <!-- Сюда подгружается список -->
-            </div>
+            <div id="students-container"></div>
         </div>
 
-        <!-- Окно: Добавить ученика -->
         <div id="modal-add-student" class="modal">
             <h2>Новый ученик</h2>
             <label class="input-label">Имя ученика</label>
@@ -144,10 +141,8 @@
             <button class="action-btn" onclick="addStudent()">Сохранить ученика</button>
         </div>
 
-        <!-- Окно: Оплаты (Пока статика для визуала) -->
         <div id="modal-payments" class="modal"><h2>Учет оплат</h2><div class="list-item"><span>Алексей (2 урока)</span><span style="color: #ff3b30; font-weight: bold;">- 3 000 ₽</span></div></div>
 
-        <!-- Окно: Настройки -->
         <div id="modal-settings" class="modal">
             <h2>Настройки</h2>
             <div class="card" style="padding: 10px 20px;">
@@ -171,14 +166,19 @@
             </div>
         </div>
 
-        <!-- Окно: Редактирование -->
+        <!-- Окно: ОБНОВЛЕННОЕ Редактирование -->
         <div id="modal-edit" class="modal">
             <h2>Профиль и Финансы</h2>
+            
             <label class="input-label">Имя и Фамилия</label>
             <input type="text" id="edit-name-input" class="input-field">
             
             <label class="input-label">Предметы (через запятую)</label>
             <input type="text" id="edit-subjects-input" class="input-field">
+            
+            <!-- НОВОЕ ПОЛЕ: Ссылка на бота -->
+            <label class="input-label">Ссылка на твоего бота (для визитки)</label>
+            <input type="text" id="edit-bot-link" class="input-field" placeholder="https://t.me/ТвойБот">
             
             <label class="input-label">Стандартная ставка (₽ / час)</label>
             <input type="number" id="edit-rate-input" class="input-field">
@@ -211,7 +211,7 @@
         const user = tg.initDataUnsafe?.user;
         let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Умный Репетитор";
         
-        // --- 1. ЗАГРУЗКА ДАННЫХ ---
+        // --- ЗАГРУЗКА ДАННЫХ ---
         let savedName = localStorage.getItem('tutorName') || defaultName;
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = localStorage.getItem('tutorRate') || "1500";
@@ -219,16 +219,18 @@
         let savedGoal = localStorage.getItem('tutorGoal') || "60000";
         let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
         
-        // Список учеников
+        // Новая переменная: ссылка на бота
+        let savedBotLink = localStorage.getItem('tutorBotLink') || "https://t.me/TutorScheduleBot";
+        
         let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [
             {name: 'Алексей', desc: 'C++ • Пн, Ср'},
             {name: 'Мария', desc: 'Физика • Вт, Чт'}
         ];
 
-        let settingRemind = localStorage.getItem('setRemind') !== 'false'; // По умолчанию включено
+        let settingRemind = localStorage.getItem('setRemind') !== 'false';
         let settingHide = localStorage.getItem('setHide') === 'true';
 
-        // --- 2. ПРИМЕНЕНИЕ ДАННЫХ К ИНТЕРФЕЙСУ ---
+        // --- ПРИМЕНЕНИЕ ДАННЫХ К ИНТЕРФЕЙСУ ---
         document.documentElement.style.setProperty('--accent-color', savedAccent);
 
         function updateUI() {
@@ -236,28 +238,27 @@
             document.getElementById('user-subjects').innerText = "Преподаватель (" + savedSubjects + ")";
             document.getElementById('stat-rate').innerText = savedRate + " ₽";
             
-            // Заполнение форм
             document.getElementById('edit-name-input').value = savedName;
             document.getElementById('edit-subjects-input').value = savedSubjects;
             document.getElementById('edit-rate-input').value = savedRate;
             document.getElementById('edit-income-input').value = savedIncome;
             document.getElementById('edit-goal-input').value = savedGoal;
             
+            // Вставляем ссылку в поле ввода
+            document.getElementById('edit-bot-link').value = savedBotLink;
+            
             document.getElementById('setting-remind').checked = settingRemind;
             document.getElementById('setting-hide').checked = settingHide;
 
-            // Логика прогресс-бара
             document.getElementById('finance-text').innerText = `${savedIncome} / ${savedGoal} ₽`;
             let percent = savedGoal > 0 ? (savedIncome / savedGoal) * 100 : 0;
             if (percent > 100) percent = 100;
-            document.getElementById('finance-progress').style.width = '0%'; // сброс для анимации
+            document.getElementById('finance-progress').style.width = '0%';
             setTimeout(() => { document.getElementById('finance-progress').style.width = percent + '%'; }, 100);
             
-            // Счетчик учеников на главном экране
             document.getElementById('stat-students').innerText = studentsList.length;
         }
 
-        // --- 3. АВАТАРКА ---
         if (user && user.photo_url) {
             document.getElementById('user-avatar').src = user.photo_url;
             document.getElementById('user-avatar').style.display = 'block';
@@ -266,7 +267,7 @@
             document.getElementById('avatar-fallback').innerText = savedName.charAt(0).toUpperCase();
         }
 
-        // --- 4. ЛОГИКА УЧЕНИКОВ ---
+        // --- ЛОГИКА УЧЕНИКОВ ---
         function renderStudents() {
             const container = document.getElementById('students-container');
             container.innerHTML = '';
@@ -300,25 +301,27 @@
                 document.getElementById('new-st-desc').value = '';
                 renderStudents();
                 tg.HapticFeedback.notificationOccurred('success');
-                openModal('modal-students'); // Возвращаемся к списку
+                openModal('modal-students');
             } else {
                 tg.showAlert("Пожалуйста, введи имя ученика!");
             }
         }
 
-        // --- 5. СОХРАНЕНИЕ ПРОФИЛЯ И НАСТРОЕК ---
+        // --- СОХРАНЕНИЕ ПРОФИЛЯ ---
         function saveProfile() {
             savedName = document.getElementById('edit-name-input').value;
             savedSubjects = document.getElementById('edit-subjects-input').value;
             savedRate = document.getElementById('edit-rate-input').value;
             savedIncome = document.getElementById('edit-income-input').value;
             savedGoal = document.getElementById('edit-goal-input').value;
+            savedBotLink = document.getElementById('edit-bot-link').value; // Сохраняем ссылку бота
             
             localStorage.setItem('tutorName', savedName);
             localStorage.setItem('tutorSubjects', savedSubjects);
             localStorage.setItem('tutorRate', savedRate);
             localStorage.setItem('tutorIncome', savedIncome);
             localStorage.setItem('tutorGoal', savedGoal);
+            localStorage.setItem('tutorBotLink', savedBotLink);
             
             updateUI();
             tg.HapticFeedback.notificationOccurred('success');
@@ -340,16 +343,21 @@
             tg.HapticFeedback.selectionChanged();
         }
 
-        // --- 6. ВИЗИТКА ---
+        // --- УМНАЯ ВИЗИТКА ---
         function shareBusinessCard() {
             tg.HapticFeedback.impactOccurred('medium');
-            const text = encodeURIComponent(`Привет! Я ${savedName}, преподаватель (${savedSubjects}). Записывайся ко мне на занятия!`);
-            // Перекидываем пользователя в окно выбора чата для пересылки
-            const shareUrl = `https://t.me/share/url?url=https://t.me/TutorScheduleBot&text=${text}`;
+            
+            // Формируем красивый многострочный текст визитки
+            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего удобного бота-помощника. Жми на ссылку!`;
+            
+            // Формируем финальную ссылку для Telegram
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(savedBotLink)}&text=${encodeURIComponent(cardText)}`;
+            
+            // Открываем окно выбора контактов
             tg.openTelegramLink(shareUrl);
         }
 
-        // --- 7. НАВИГАЦИЯ И МОДАЛКИ ---
+        // --- НАВИГАЦИЯ ---
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -361,7 +369,7 @@
         let activeModal = null;
         function openModal(modalId) {
             tg.HapticFeedback.impactOccurred('medium');
-            if (activeModal) activeModal.style.display = 'none'; // Скрываем предыдущую, если открываем поверх
+            if (activeModal) activeModal.style.display = 'none';
             activeModal = document.getElementById(modalId);
             activeModal.style.display = 'block';
             document.getElementById('bottom-nav').style.display = 'none';
@@ -375,7 +383,6 @@
         }
         tg.BackButton.onClick(function() { closeModal(); });
 
-        // Инициализация при старте
         updateUI();
         renderStudents();
     </script>
