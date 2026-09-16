@@ -7,7 +7,6 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* CSS-переменная для кастомизации цвета */
         :root { --accent-color: var(--tg-theme-button-color, #3390ec); }
 
         /* Базовые стили */
@@ -24,7 +23,7 @@
         .tab-btn.active { color: var(--accent-color); font-weight: 600; }
         .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; transform: scale(1.1); }
 
-        /* Карточки и Профиль */
+        /* Карточки */
         .card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .profile-card { text-align: center; }
         .avatar-container { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), #3390ec); display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); transition: 0.3s; }
@@ -33,12 +32,10 @@
         .profile-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0; }
         .profile-role { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
-        /* Прогресс-бар */
+        /* Прогресс-бар и Статистика */
         .goal-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; font-weight: bold; }
         .progress-bg { background-color: var(--tg-theme-secondary-bg-color, #e5e5ea); height: 12px; border-radius: 6px; overflow: hidden; }
         .progress-fill { background: linear-gradient(90deg, #34c759, #30d158); width: 0%; height: 100%; border-radius: 6px; transition: width 1.2s cubic-bezier(0.1, 0.8, 0.2, 1); }
-
-        /* Статистика */
         .stats-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
         .stat-box { flex: 1; background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 12px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .stat-value { font-size: 20px; font-weight: bold; color: var(--accent-color); margin: 0 0 4px 0; transition: color 0.3s;}
@@ -51,7 +48,7 @@
         .action-btn.green { background-color: #34c759; }
         .action-btn.secondary { background-color: rgba(142, 142, 147, 0.15); color: var(--tg-theme-text-color, #000); flex: 1; }
 
-        /* Тумблеры */
+        /* Тумблеры и Цвет */
         .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--tg-theme-hint-color, #eee); }
         .settings-row:last-child { border-bottom: none; }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
@@ -60,20 +57,35 @@
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(20px); }
-
-        /* Выбор цвета */
         .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
         .color-dot:active { transform: scale(0.8); }
+
+        /* ================= ДИЗАЙН РАСПИСАНИЯ ================= */
+        .calendar-nav { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 15px; scrollbar-width: none; }
+        .calendar-nav::-webkit-scrollbar { display: none; }
+        
+        .cal-day { min-width: 60px; padding: 12px 0; background-color: var(--tg-theme-bg-color, #fff); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border: 2px solid transparent; transition: 0.2s; }
+        .cal-day span { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin-bottom: 4px; }
+        .cal-day b { font-size: 18px; color: var(--tg-theme-text-color, #000); }
+        .cal-day.active { border-color: var(--accent-color); background-color: rgba(51, 144, 236, 0.05); }
+        .cal-day.active span, .cal-day.active b { color: var(--accent-color); }
+
+        .slot { background-color: var(--tg-theme-bg-color, #fff); border-radius: 12px; padding: 15px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.03); border-left: 4px solid transparent; }
+        .slot.booked { border-left-color: #34c759; } /* Зеленая полоска для занятых */
+        .slot.free { border-left-color: var(--accent-color); cursor: pointer; } /* Цвет акцента для свободных */
+        
+        .slot-time { font-size: 16px; font-weight: bold; color: var(--tg-theme-text-color, #000); margin-bottom: 4px; }
+        .slot-info { font-size: 14px; color: var(--tg-theme-hint-color, #888); }
+        .slot-info b { color: var(--tg-theme-text-color, #000); }
+        .slot-price { font-weight: bold; color: var(--tg-theme-text-color, #000); background: var(--tg-theme-secondary-bg-color, #f0f2f5); padding: 4px 8px; border-radius: 8px; font-size: 14px; }
 
         /* Модальные окна */
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; animation: slideIn 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .list-item { background: var(--tg-theme-bg-color, #fff); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
-        
         .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--tg-theme-hint-color, #ccc); background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); font-size: 16px; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
         .input-field:focus { border-color: var(--accent-color); }
         .input-label { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin-bottom: 5px; display: block; font-weight: 500; }
-        
         .delete-btn { background: none; border: none; color: #ff3b30; font-size: 24px; cursor: pointer; padding: 0 10px; }
     </style>
 </head>
@@ -82,7 +94,7 @@
     <div class="content-area">
         
         <!-- ================= ПРОФИЛЬ ================= -->
-        <div id="tab-profile" class="tab-content active">
+        <div id="tab-profile" class="tab-content">
             <div class="card profile-card">
                 <div class="avatar-container">
                     <img id="user-avatar" src="" alt="Avatar">
@@ -116,89 +128,74 @@
                 <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
             </div>
             
-            <!-- Кнопка вызова обновленной визитки -->
             <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
         </div>
 
-        <!-- РАСПИСАНИЕ И ДОМАШКА -->
-        <div id="tab-schedule" class="tab-content"><h2>📅 Расписание</h2><p style="color: var(--tg-theme-hint-color);">Здесь будет календарь.</p></div>
-        <div id="tab-homework" class="tab-content"><h2>📚 Домашка</h2><p style="color: var(--tg-theme-hint-color);">Здесь будут задания учеников.</p></div>
-
-        <!-- ================= МОДАЛКИ ================= -->
-        
-        <div id="modal-students" class="modal">
-            <h2>Мои ученики</h2>
-            <button class="action-btn secondary" style="margin-bottom: 15px;" onclick="openModal('modal-add-student')">+ Добавить ученика</button>
-            <div id="students-container"></div>
-        </div>
-
-        <div id="modal-add-student" class="modal">
-            <h2>Новый ученик</h2>
-            <label class="input-label">Имя ученика</label>
-            <input type="text" id="new-st-name" class="input-field" placeholder="Например: Иван">
-            <label class="input-label">Предмет и расписание</label>
-            <input type="text" id="new-st-desc" class="input-field" placeholder="Например: Физика • Пн, Ср">
-            <button class="action-btn" onclick="addStudent()">Сохранить ученика</button>
-        </div>
-
-        <div id="modal-payments" class="modal"><h2>Учет оплат</h2><div class="list-item"><span>Алексей (2 урока)</span><span style="color: #ff3b30; font-weight: bold;">- 3 000 ₽</span></div></div>
-
-        <div id="modal-settings" class="modal">
-            <h2>Настройки</h2>
-            <div class="card" style="padding: 10px 20px;">
-                <div class="settings-row">
-                    <span>Цветовой акцент</span>
-                    <div style="display: flex; gap: 12px;">
-                        <div class="color-dot" style="background: #3390ec;" onclick="changeAccent('#3390ec')"></div>
-                        <div class="color-dot" style="background: #34c759;" onclick="changeAccent('#34c759')"></div>
-                        <div class="color-dot" style="background: #af52de;" onclick="changeAccent('#af52de')"></div>
-                        <div class="color-dot" style="background: #ff9500;" onclick="changeAccent('#ff9500')"></div>
-                    </div>
-                </div>
-                <div class="settings-row">
-                    <span>Напоминания ученикам</span>
-                    <label class="switch"><input type="checkbox" id="setting-remind" onchange="saveSettings()"><span class="slider"></span></label>
-                </div>
-                <div class="settings-row">
-                    <span>Скрывать пустые дни</span>
-                    <label class="switch"><input type="checkbox" id="setting-hide" onchange="saveSettings()"><span class="slider"></span></label>
-                </div>
+        <!-- ================= РАСПИСАНИЕ (ОБНОВЛЕНО) ================= -->
+        <div id="tab-schedule" class="tab-content active">
+            
+            <!-- Лента дней -->
+            <div class="calendar-nav">
+                <div class="cal-day active" onclick="selectDay(this)"><span>Пн</span><b>14</b></div>
+                <div class="cal-day" onclick="selectDay(this)"><span>Вт</span><b>15</b></div>
+                <div class="cal-day" onclick="selectDay(this)"><span>Ср</span><b>16</b></div>
+                <div class="cal-day" onclick="selectDay(this)"><span>Чт</span><b>17</b></div>
+                <div class="cal-day" onclick="selectDay(this)"><span>Пт</span><b>18</b></div>
+                <div class="cal-day" onclick="selectDay(this)"><span>Сб</span><b>19</b></div>
+                <div class="cal-day" onclick="selectDay(this)"><span>Вс</span><b>20</b></div>
             </div>
+
+            <!-- Слоты на выбранный день -->
+            <div id="slots-list">
+                
+                <div class="slot booked" onclick="tg.showAlert('Урок с Алексеем. Оплачено.')">
+                    <div>
+                        <div class="slot-time">15:00 - 16:30</div>
+                        <div class="slot-info"><b>Алексей</b> • C++</div>
+                    </div>
+                    <div class="slot-price">1500 ₽</div>
+                </div>
+
+                <div class="slot free" onclick="tg.showAlert('Здесь мы сделаем меню записи ученика на это время')">
+                    <div>
+                        <div class="slot-time">17:00 - 18:00</div>
+                        <div class="slot-info" style="color: var(--accent-color);">Свободное окно</div>
+                    </div>
+                    <div class="slot-price">+</div>
+                </div>
+
+                <div class="slot booked" style="border-left-color: #ff3b30;" onclick="tg.showAlert('Урок с Марией. Долг за прошлый урок!')">
+                    <div>
+                        <div class="slot-time">18:30 - 20:00</div>
+                        <div class="slot-info"><b>Мария</b> • Физика</div>
+                    </div>
+                    <div class="slot-price" style="color: #ff3b30;">Долг</div>
+                </div>
+
+            </div>
+
+            <button class="action-btn" style="margin-top: 15px;" onclick="tg.showAlert('Меню создания нового окна в расписании')">+ Добавить окно</button>
         </div>
 
-        <!-- Окно: ОБНОВЛЕННОЕ Редактирование -->
-        <div id="modal-edit" class="modal">
-            <h2>Профиль и Финансы</h2>
-            
-            <label class="input-label">Имя и Фамилия</label>
-            <input type="text" id="edit-name-input" class="input-field">
-            
-            <label class="input-label">Предметы (через запятую)</label>
-            <input type="text" id="edit-subjects-input" class="input-field">
-            
-            <!-- НОВОЕ ПОЛЕ: Ссылка на бота -->
-            <label class="input-label">Ссылка на твоего бота (для визитки)</label>
-            <input type="text" id="edit-bot-link" class="input-field" placeholder="https://t.me/ТвойБот">
-            
-            <label class="input-label">Стандартная ставка (₽ / час)</label>
-            <input type="number" id="edit-rate-input" class="input-field">
-
-            <hr style="border: none; border-top: 1px solid var(--tg-theme-hint-color); margin: 20px 0; opacity: 0.3;">
-            
-            <label class="input-label">Текущий доход (₽)</label>
-            <input type="number" id="edit-income-input" class="input-field">
-
-            <label class="input-label">Цель на месяц (₽)</label>
-            <input type="number" id="edit-goal-input" class="input-field">
-            
-            <button class="action-btn" onclick="saveProfile()">Сохранить все</button>
+        <!-- ================= ДОМАШКА ================= -->
+        <div id="tab-homework" class="tab-content">
+            <h2>📚 Домашка</h2>
+            <p style="color: var(--tg-theme-hint-color);">Здесь будут задания учеников.</p>
         </div>
+
+        <!-- ================= МОДАЛКИ (Остались без изменений) ================= -->
+        <div id="modal-students" class="modal"><h2>Мои ученики</h2><button class="action-btn secondary" style="margin-bottom: 15px;" onclick="openModal('modal-add-student')">+ Добавить ученика</button><div id="students-container"></div></div>
+        <div id="modal-add-student" class="modal"><h2>Новый ученик</h2><label class="input-label">Имя ученика</label><input type="text" id="new-st-name" class="input-field"><label class="input-label">Предмет и расписание</label><input type="text" id="new-st-desc" class="input-field"><button class="action-btn" onclick="addStudent()">Сохранить ученика</button></div>
+        <div id="modal-payments" class="modal"><h2>Учет оплат</h2><div class="list-item"><span>Алексей (2 урока)</span><span style="color: #ff3b30; font-weight: bold;">- 3 000 ₽</span></div></div>
+        <div id="modal-settings" class="modal"><h2>Настройки</h2><div class="card" style="padding: 10px 20px;"><div class="settings-row"><span>Цветовой акцент</span><div style="display: flex; gap: 12px;"><div class="color-dot" style="background: #3390ec;" onclick="changeAccent('#3390ec')"></div><div class="color-dot" style="background: #34c759;" onclick="changeAccent('#34c759')"></div><div class="color-dot" style="background: #af52de;" onclick="changeAccent('#af52de')"></div><div class="color-dot" style="background: #ff9500;" onclick="changeAccent('#ff9500')"></div></div></div><div class="settings-row"><span>Напоминания ученикам</span><label class="switch"><input type="checkbox" id="setting-remind" onchange="saveSettings()"><span class="slider"></span></label></div><div class="settings-row"><span>Скрывать пустые дни</span><label class="switch"><input type="checkbox" id="setting-hide" onchange="saveSettings()"><span class="slider"></span></label></div></div></div>
+        <div id="modal-edit" class="modal"><h2>Профиль и Финансы</h2><label class="input-label">Имя и Фамилия</label><input type="text" id="edit-name-input" class="input-field"><label class="input-label">Предметы</label><input type="text" id="edit-subjects-input" class="input-field"><label class="input-label">Ссылка на твоего бота</label><input type="text" id="edit-bot-link" class="input-field"><label class="input-label">Ставка (₽/час)</label><input type="number" id="edit-rate-input" class="input-field"><hr style="border: none; border-top: 1px solid var(--tg-theme-hint-color); margin: 20px 0; opacity: 0.3;"><label class="input-label">Текущий доход (₽)</label><input type="number" id="edit-income-input" class="input-field"><label class="input-label">Цель на месяц (₽)</label><input type="number" id="edit-goal-input" class="input-field"><button class="action-btn" onclick="saveProfile()">Сохранить все</button></div>
+
     </div>
 
-    <!-- Навигация -->
+    <!-- Навигация (Расписание активно по умолчанию для теста) -->
     <div class="tab-bar" id="bottom-nav">
-        <div class="tab-btn active" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span>Профиль</span></div>
-        <div class="tab-btn" onclick="switchTab('tab-schedule', this)"><span class="icon">📅</span><span>Расписание</span></div>
+        <div class="tab-btn" onclick="switchTab('tab-profile', this)"><span class="icon">👤</span><span>Профиль</span></div>
+        <div class="tab-btn active" onclick="switchTab('tab-schedule', this)"><span class="icon">📅</span><span>Расписание</span></div>
         <div class="tab-btn" onclick="switchTab('tab-homework', this)"><span class="icon">📚</span><span>Домашка</span></div>
     </div>
 
@@ -211,15 +208,12 @@
         const user = tg.initDataUnsafe?.user;
         let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Умный Репетитор";
         
-        // --- ЗАГРУЗКА ДАННЫХ ---
         let savedName = localStorage.getItem('tutorName') || defaultName;
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = localStorage.getItem('tutorRate') || "1500";
         let savedIncome = localStorage.getItem('tutorIncome') || "45000";
         let savedGoal = localStorage.getItem('tutorGoal') || "60000";
         let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
-        
-        // Новая переменная: ссылка на бота
         let savedBotLink = localStorage.getItem('tutorBotLink') || "https://t.me/TutorScheduleBot";
         
         let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [
@@ -230,7 +224,6 @@
         let settingRemind = localStorage.getItem('setRemind') !== 'false';
         let settingHide = localStorage.getItem('setHide') === 'true';
 
-        // --- ПРИМЕНЕНИЕ ДАННЫХ К ИНТЕРФЕЙСУ ---
         document.documentElement.style.setProperty('--accent-color', savedAccent);
 
         function updateUI() {
@@ -243,8 +236,6 @@
             document.getElementById('edit-rate-input').value = savedRate;
             document.getElementById('edit-income-input').value = savedIncome;
             document.getElementById('edit-goal-input').value = savedGoal;
-            
-            // Вставляем ссылку в поле ввода
             document.getElementById('edit-bot-link').value = savedBotLink;
             
             document.getElementById('setting-remind').checked = settingRemind;
@@ -267,97 +258,33 @@
             document.getElementById('avatar-fallback').innerText = savedName.charAt(0).toUpperCase();
         }
 
-        // --- ЛОГИКА УЧЕНИКОВ ---
         function renderStudents() {
             const container = document.getElementById('students-container');
             container.innerHTML = '';
-            if(studentsList.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:gray; font-size:14px;">Список пуст. Добавьте ученика.</p>';
-            }
             studentsList.forEach((st, index) => {
-                container.innerHTML += `
-                    <div class="list-item">
-                        <div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">${st.desc}</span></div>
-                        <button class="delete-btn" onclick="removeStudent(${index})">×</button>
-                    </div>`;
+                container.innerHTML += `<div class="list-item"><div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">${st.desc}</span></div><button class="delete-btn" onclick="removeStudent(${index})">×</button></div>`;
             });
             document.getElementById('stat-students').innerText = studentsList.length;
         }
+        function removeStudent(index) { tg.HapticFeedback.impactOccurred('light'); studentsList.splice(index, 1); localStorage.setItem('tutorStudents', JSON.stringify(studentsList)); renderStudents(); }
+        function addStudent() { const name = document.getElementById('new-st-name').value; const desc = document.getElementById('new-st-desc').value; if(name.trim() !== "") { studentsList.push({name: name, desc: desc || "Без расписания"}); localStorage.setItem('tutorStudents', JSON.stringify(studentsList)); document.getElementById('new-st-name').value = ''; document.getElementById('new-st-desc').value = ''; renderStudents(); tg.HapticFeedback.notificationOccurred('success'); openModal('modal-students'); } else { tg.showAlert("Пожалуйста, введи имя ученика!"); } }
 
-        function removeStudent(index) {
-            tg.HapticFeedback.impactOccurred('light');
-            studentsList.splice(index, 1);
-            localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
-            renderStudents();
-        }
-
-        function addStudent() {
-            const name = document.getElementById('new-st-name').value;
-            const desc = document.getElementById('new-st-desc').value;
-            if(name.trim() !== "") {
-                studentsList.push({name: name, desc: desc || "Без расписания"});
-                localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
-                document.getElementById('new-st-name').value = '';
-                document.getElementById('new-st-desc').value = '';
-                renderStudents();
-                tg.HapticFeedback.notificationOccurred('success');
-                openModal('modal-students');
-            } else {
-                tg.showAlert("Пожалуйста, введи имя ученика!");
-            }
-        }
-
-        // --- СОХРАНЕНИЕ ПРОФИЛЯ ---
         function saveProfile() {
-            savedName = document.getElementById('edit-name-input').value;
-            savedSubjects = document.getElementById('edit-subjects-input').value;
-            savedRate = document.getElementById('edit-rate-input').value;
-            savedIncome = document.getElementById('edit-income-input').value;
-            savedGoal = document.getElementById('edit-goal-input').value;
-            savedBotLink = document.getElementById('edit-bot-link').value; // Сохраняем ссылку бота
-            
-            localStorage.setItem('tutorName', savedName);
-            localStorage.setItem('tutorSubjects', savedSubjects);
-            localStorage.setItem('tutorRate', savedRate);
-            localStorage.setItem('tutorIncome', savedIncome);
-            localStorage.setItem('tutorGoal', savedGoal);
-            localStorage.setItem('tutorBotLink', savedBotLink);
-            
-            updateUI();
-            tg.HapticFeedback.notificationOccurred('success');
-            closeModal();
+            savedName = document.getElementById('edit-name-input').value; savedSubjects = document.getElementById('edit-subjects-input').value; savedRate = document.getElementById('edit-rate-input').value; savedIncome = document.getElementById('edit-income-input').value; savedGoal = document.getElementById('edit-goal-input').value; savedBotLink = document.getElementById('edit-bot-link').value;
+            localStorage.setItem('tutorName', savedName); localStorage.setItem('tutorSubjects', savedSubjects); localStorage.setItem('tutorRate', savedRate); localStorage.setItem('tutorIncome', savedIncome); localStorage.setItem('tutorGoal', savedGoal); localStorage.setItem('tutorBotLink', savedBotLink);
+            updateUI(); tg.HapticFeedback.notificationOccurred('success'); closeModal();
         }
 
-        function saveSettings() {
-            settingRemind = document.getElementById('setting-remind').checked;
-            settingHide = document.getElementById('setting-hide').checked;
-            localStorage.setItem('setRemind', settingRemind);
-            localStorage.setItem('setHide', settingHide);
-            tg.HapticFeedback.selectionChanged();
-        }
-
-        function changeAccent(color) {
-            savedAccent = color;
-            localStorage.setItem('tutorAccent', color);
-            document.documentElement.style.setProperty('--accent-color', color);
-            tg.HapticFeedback.selectionChanged();
-        }
-
-        // --- УМНАЯ ВИЗИТКА ---
+        function saveSettings() { settingRemind = document.getElementById('setting-remind').checked; settingHide = document.getElementById('setting-hide').checked; localStorage.setItem('setRemind', settingRemind); localStorage.setItem('setHide', settingHide); tg.HapticFeedback.selectionChanged(); }
+        function changeAccent(color) { savedAccent = color; localStorage.setItem('tutorAccent', color); document.documentElement.style.setProperty('--accent-color', color); tg.HapticFeedback.selectionChanged(); }
+        
         function shareBusinessCard() {
             tg.HapticFeedback.impactOccurred('medium');
-            
-            // Формируем красивый многострочный текст визитки
-            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего удобного бота-помощника. Жми на ссылку!`;
-            
-            // Формируем финальную ссылку для Telegram
+            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего удобного бота-помощника. Жми на ссылку! 👇`;
             const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(savedBotLink)}&text=${encodeURIComponent(cardText)}`;
-            
-            // Открываем окно выбора контактов
             tg.openTelegramLink(shareUrl);
         }
 
-        // --- НАВИГАЦИЯ ---
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -367,21 +294,19 @@
         }
 
         let activeModal = null;
-        function openModal(modalId) {
-            tg.HapticFeedback.impactOccurred('medium');
-            if (activeModal) activeModal.style.display = 'none';
-            activeModal = document.getElementById(modalId);
-            activeModal.style.display = 'block';
-            document.getElementById('bottom-nav').style.display = 'none';
-            tg.BackButton.show(); 
-        }
-
-        function closeModal() {
-            if (activeModal) { activeModal.style.display = 'none'; activeModal = null; }
-            document.getElementById('bottom-nav').style.display = 'flex';
-            tg.BackButton.hide();
-        }
+        function openModal(modalId) { tg.HapticFeedback.impactOccurred('medium'); if (activeModal) activeModal.style.display = 'none'; activeModal = document.getElementById(modalId); activeModal.style.display = 'block'; document.getElementById('bottom-nav').style.display = 'none'; tg.BackButton.show(); }
+        function closeModal() { if (activeModal) { activeModal.style.display = 'none'; activeModal = null; } document.getElementById('bottom-nav').style.display = 'flex'; tg.BackButton.hide(); }
         tg.BackButton.onClick(function() { closeModal(); });
+
+        // ФУНКЦИЯ ВЫБОРА ДНЯ В КАЛЕНДАРЕ
+        function selectDay(element) {
+            tg.HapticFeedback.selectionChanged();
+            document.querySelectorAll('.cal-day').forEach(day => day.classList.remove('active'));
+            element.classList.add('active');
+            
+            // В будущем здесь мы будем отправлять запрос в базу данных Python, 
+            // чтобы получить слоты на выбранный день.
+        }
 
         updateUI();
         renderStudents();
