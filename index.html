@@ -275,10 +275,14 @@
         let lessonsState = {}; 
         let selectedDateStr = formatDateKey(new Date());
 
-        // --- АСИНХРОННАЯ ЗАГРУЗКА И СОХРАНЕНИЕ ---
+                // --- АСИНХРОННАЯ ЗАГРУЗКА И СОХРАНЕНИЕ ---
         async function loadServerData() {
             try {
-                let response = await fetch(`${API_URL}/api/get_data?tutor_id=${targetTutorId}`);
+                let response = await fetch(`${API_URL}/api/get_data?tutor_id=${targetTutorId}`, {
+                    headers: {
+                        "ngrok-skip-browser-warning": "69420" // Пробиваем защитный экран ngrok
+                    }
+                });
                 let data = await response.json();
                 
                 studentsList = data.students || [];
@@ -315,7 +319,10 @@
             try {
                 await fetch(`${API_URL}/api/save_data`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'ngrok-skip-browser-warning': '69420' // Пробиваем защитный экран ngrok
+                    },
                     body: JSON.stringify({
                         tutor_id: targetTutorId,
                         students: studentsList,
@@ -326,6 +333,7 @@
                 console.error("Ошибка сохранения на сервер:", e);
             }
         }
+
 
         // Рендер информации ученика
         function renderStudentProfile() {
