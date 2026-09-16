@@ -8,36 +8,36 @@
     
     <style>
         /* Базовые стили */
-        body {
-            margin: 0; padding: 0;
-            background-color: var(--tg-theme-bg-color, #f0f2f5);
-            color: var(--tg-theme-text-color, #000000);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
-        }
+        body { margin: 0; padding: 0; background-color: var(--tg-theme-bg-color, #f0f2f5); color: var(--tg-theme-text-color, #000000); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .content-area { flex-grow: 1; overflow-y: auto; padding: 20px; position: relative; }
         
-        /* Вкладки */
+        /* Вкладки и навигация */
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* Нижняя панель */
         .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-bg-color, #ffffff); padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
         .tab-btn { flex: 1; padding: 12px 0 16px 0; text-align: center; font-size: 12px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s; }
         .tab-btn .icon { font-size: 22px; filter: grayscale(100%); opacity: 0.6; transition: 0.2s; }
         .tab-btn.active { color: var(--tg-theme-link-color, #007aff); font-weight: 600; }
         .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; transform: scale(1.1); }
 
-        /* Карточка профиля */
-        .profile-card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 20px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        /* Карточки */
+        .card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .profile-card { text-align: center; }
+        
+        /* Аватарка и текст */
         .avatar-container { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, #007aff, #3390ec); display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
         .avatar-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .avatar-fallback { color: white; font-size: 32px; font-weight: bold; }
         .profile-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0; }
         .profile-role { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
-        /* Статистика (мини) */
+        /* Прогресс-бар цели */
+        .goal-header { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 10px; font-weight: bold; }
+        .progress-bg { background-color: var(--tg-theme-secondary-bg-color, #e5e5ea); height: 12px; border-radius: 6px; overflow: hidden; }
+        .progress-fill { background: linear-gradient(90deg, #34c759, #30d158); width: 75%; height: 100%; border-radius: 6px; transition: 1s ease-out; }
+
+        /* Статистика */
         .stats-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
         .stat-box { flex: 1; background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 12px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         .stat-value { font-size: 20px; font-weight: bold; color: var(--tg-theme-link-color, #007aff); margin: 0 0 4px 0; }
@@ -50,17 +50,20 @@
         .action-btn.green { background-color: #34c759; box-shadow: 0 4px 10px rgba(52, 199, 89, 0.2); }
         .action-btn.secondary { background-color: var(--tg-theme-secondary-bg-color, #e5e5ea); color: var(--tg-theme-text-color, #000); box-shadow: none; flex: 1; }
 
-        /* ================= МОДАЛЬНЫЕ ОКНА ================= */
+        /* iOS Тумблер (Switch) */
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--tg-theme-hint-color, #eee); }
+        .settings-row:last-child { border-bottom: none; }
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        input:checked + .slider { background-color: #34c759; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Модалки и формы */
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--tg-theme-bg-color, #f0f2f5); z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; animation: slideIn 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        
-        .modal h2 { margin-top: 0; margin-bottom: 20px; }
-        
-        /* Списки и формы в модалках */
         .list-item { background: var(--tg-theme-secondary-bg-color, #fff); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .debt { color: #ff3b30; font-weight: bold; }
-        .paid { color: #34c759; font-weight: bold; }
-        
         .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--tg-theme-hint-color, #ccc); background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); font-size: 16px; box-sizing: border-box; }
         .input-label { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin-bottom: 5px; display: block; }
     </style>
@@ -69,11 +72,10 @@
 
     <div class="content-area">
         
-        <!-- ================= ГЛАВНЫЕ ВКЛАДКИ ================= -->
-        
-        <!-- ВКЛАДКА: ПРОФИЛЬ -->
+        <!-- ================= ВКЛАДКА: ПРОФИЛЬ ================= -->
         <div id="tab-profile" class="tab-content active">
-            <div class="profile-card">
+            
+            <div class="card profile-card">
                 <div class="avatar-container">
                     <img id="user-avatar" src="" alt="Avatar">
                     <span id="avatar-fallback" class="avatar-fallback">В</span>
@@ -82,9 +84,20 @@
                 <p id="user-subjects" class="profile-role">Преподаватель (Физика, C++)</p>
             </div>
 
+            <!-- НОВОЕ: Прогресс-бар цели -->
+            <div class="card">
+                <div class="goal-header">
+                    <span>Финансовая цель</span>
+                    <span style="color: var(--tg-theme-link-color, #007aff);">45 000 / 60 000 ₽</span>
+                </div>
+                <div class="progress-bg">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+
             <div class="stats-row">
                 <div class="stat-box"><p class="stat-value">12</p><p class="stat-label">Учеников</p></div>
-                <div class="stat-box"><p class="stat-value">₽ 45к</p><p class="stat-label">За месяц</p></div>
+                <div class="stat-box"><p class="stat-value">45к</p><p class="stat-label">Доход, ₽</p></div>
                 <div class="stat-box"><p class="stat-value">98%</p><p class="stat-label">Явка</p></div>
             </div>
 
@@ -92,58 +105,50 @@
             <button class="action-btn green" style="margin-top: 10px;" onclick="openModal('modal-payments')">💳 Учет оплат и долги</button>
             
             <div class="btn-group">
-                <button class="action-btn secondary" onclick="openModal('modal-stats')">📊 Статистика</button>
+                <button class="action-btn secondary" onclick="openModal('modal-settings')">⚙️ Настройки</button>
                 <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
+            </div>
+            
+            <button class="action-btn secondary" style="margin-top: 10px;" onclick="tg.showAlert('Ссылка скопирована! Отправь её новому ученику.')">🔗 Поделиться визиткой</button>
+        </div>
+
+        <!-- ВКЛАДКИ: РАСПИСАНИЕ И ДОМАШКА -->
+        <div id="tab-schedule" class="tab-content"><h2>📅 Расписание</h2><p>Раздел в разработке...</p></div>
+        <div id="tab-homework" class="tab-content"><h2>📚 Домашние задания</h2><p>Раздел в разработке...</p></div>
+
+        <!-- ================= МОДАЛЬНЫЕ ОКНА ================= -->
+        
+        <div id="modal-students" class="modal"><h2>Мои ученики</h2><div class="list-item"><div><b>Алексей</b><br><span style="font-size:12px; color:gray;">C++ • Пн, Ср</span></div></div></div>
+        
+        <div id="modal-payments" class="modal"><h2>Учет оплат</h2><div class="list-item"><span>Алексей (2 урока)</span><span style="color: #ff3b30; font-weight: bold;">- 3 000 ₽</span></div></div>
+
+        <!-- НОВОЕ: Окно Настроек с тумблерами -->
+        <div id="modal-settings" class="modal">
+            <h2>Настройки автоматизации</h2>
+            <div class="card" style="padding: 10px 20px;">
+                <div class="settings-row">
+                    <span>Авто-напоминания (за 1 час)</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="settings-row">
+                    <span>Уведомления об оплате</span>
+                    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+                </div>
+                <div class="settings-row">
+                    <span>Темная тема приложения</span>
+                    <label class="switch" onchange="tg.showAlert('Тема будет меняться автоматически в зависимости от настроек твоего Telegram!')"><input type="checkbox"><span class="slider"></span></label>
+                </div>
             </div>
         </div>
 
-        <!-- ВКЛАДКА: РАСПИСАНИЕ -->
-        <div id="tab-schedule" class="tab-content">
-            <h2>📅 Расписание</h2>
-            <p style="color: var(--tg-theme-hint-color);">Здесь будет сетка уроков.</p>
-        </div>
-
-        <!-- ВКЛАДКА: ДОМАШКА -->
-        <div id="tab-homework" class="tab-content">
-            <h2>📚 Домашние задания</h2>
-            <p style="color: var(--tg-theme-hint-color);">Здесь будут файлы учеников.</p>
-        </div>
-
-        <!-- ================= СКРЫТЫЕ МОДАЛЬНЫЕ ОКНА ================= -->
-        
-        <!-- Окно: Ученики -->
-        <div id="modal-students" class="modal">
-            <h2>Мои ученики</h2>
-            <div class="list-item"><div><b>Алексей</b><br><span style="font-size:12px; color:gray;">C++ • Пн, Ср</span></div></div>
-            <div class="list-item"><div><b>Мария</b><br><span style="font-size:12px; color:gray;">Физика • Вт, Чт</span></div></div>
-        </div>
-
-        <!-- Окно: Оплаты -->
-        <div id="modal-payments" class="modal">
-            <h2>Учет оплат</h2>
-            <div class="list-item"><span>Алексей (2 урока)</span><span class="debt">- 3 000 ₽</span></div>
-            <div class="list-item"><span>Мария (Аванс)</span><span class="paid">+ 5 000 ₽</span></div>
-            <div class="list-item"><span>Иван (1 урок)</span><span class="debt">- 1 500 ₽</span></div>
-        </div>
-
-        <!-- Окно: Статистика -->
-        <div id="modal-stats" class="modal">
-            <h2>Детальная статистика</h2>
-            <div class="list-item"><span>Проведено часов (за месяц)</span><b>34 ч.</b></div>
-            <div class="list-item"><span>Отмен уроков</span><b>1</b></div>
-            <div class="list-item"><span>Самый популярный день</span><b>Среда</b></div>
-            <button class="action-btn" style="margin-top: 20px;" onclick="tg.showAlert('Тут можно будет выгрузить отчет в Excel')">📥 Выгрузить отчет</button>
-        </div>
-
-        <!-- Окно: Редактирование профиля -->
+        <!-- ОБНОВЛЕНО: Рабочее редактирование -->
         <div id="modal-edit" class="modal">
             <h2>Настройки профиля</h2>
-            
             <label class="input-label">Имя и Фамилия</label>
-            <input type="text" class="input-field" value="Владислав Новиков">
+            <input type="text" id="edit-name-input" class="input-field" value="">
             
             <label class="input-label">Предметы (через запятую)</label>
-            <input type="text" class="input-field" value="Физика, C++">
+            <input type="text" id="edit-subjects-input" class="input-field" value="Физика, C++">
             
             <label class="input-label">Стандартная ставка (₽ / час)</label>
             <input type="number" class="input-field" value="1500">
@@ -165,10 +170,15 @@
         tg.ready();
         tg.expand();
 
-        // 1. Инициализация профиля из Telegram
+        let currentUserName = "Умный Репетитор";
+
+        // 1. Инициализация профиля
         const user = tg.initDataUnsafe?.user;
         if (user) {
-            document.getElementById('user-name').innerText = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            currentUserName = user.first_name + (user.last_name ? ' ' + user.last_name : '');
+            document.getElementById('user-name').innerText = currentUserName;
+            document.getElementById('edit-name-input').value = currentUserName; // Подставляем в форму редактирования
+            
             if (user.photo_url) {
                 document.getElementById('user-avatar').src = user.photo_url;
                 document.getElementById('user-avatar').style.display = 'block';
@@ -176,8 +186,6 @@
             } else {
                 document.getElementById('avatar-fallback').innerText = user.first_name.charAt(0).toUpperCase();
             }
-        } else {
-            document.getElementById('user-name').innerText = "Владислав"; // Заглушка, если открыто не в ТГ
         }
 
         // 2. Переключение вкладок
@@ -189,16 +197,13 @@
             tg.HapticFeedback.impactOccurred('light');
         }
 
-        // 3. Логика Модальных окон и кнопки "Назад"
+        // 3. Модальные окна
         let activeModal = null;
-
         function openModal(modalId) {
             tg.HapticFeedback.impactOccurred('medium');
             activeModal = document.getElementById(modalId);
             activeModal.style.display = 'block';
-            document.getElementById('bottom-nav').style.display = 'none'; // Прячем нижнее меню
-            
-            // Включаем нативную кнопку "Назад" в самом Telegram!
+            document.getElementById('bottom-nav').style.display = 'none';
             tg.BackButton.show(); 
         }
 
@@ -207,19 +212,23 @@
                 activeModal.style.display = 'none';
                 activeModal = null;
             }
-            document.getElementById('bottom-nav').style.display = 'flex'; // Возвращаем меню
-            tg.BackButton.hide(); // Прячем кнопку "Назад"
+            document.getElementById('bottom-nav').style.display = 'flex';
+            tg.BackButton.hide();
         }
+        tg.BackButton.onClick(function() { closeModal(); });
 
-        // Слушаем нажатие на кнопку "Назад" от Telegram
-        tg.BackButton.onClick(function() {
-            closeModal();
-        });
-
-        // 4. Сохранение профиля
+        // 4. РАБОЧЕЕ СОХРАНЕНИЕ: Обновляем данные на главном экране
         function saveProfile() {
+            // Получаем то, что ввел пользователь
+            const newName = document.getElementById('edit-name-input').value;
+            const newSubjects = document.getElementById('edit-subjects-input').value;
+            
+            // Меняем текст на главном экране
+            document.getElementById('user-name').innerText = newName;
+            document.getElementById('user-subjects').innerText = "Преподаватель (" + newSubjects + ")";
+            
+            // Даем тактильный отклик и закрываем
             tg.HapticFeedback.notificationOccurred('success');
-            tg.showAlert("Данные успешно сохранены!");
             closeModal();
         }
     </script>
