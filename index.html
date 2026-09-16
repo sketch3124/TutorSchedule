@@ -7,10 +7,12 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* Базовые стили и Авто-Тема */
+        /* CSS-переменная для кастомизации цвета */
+        :root { --accent-color: var(--tg-theme-button-color, #3390ec); }
+
+        /* Базовые стили */
         body { margin: 0; padding: 0; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); color: var(--tg-theme-text-color, #000000); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         .content-area { flex-grow: 1; overflow-y: auto; padding: 20px; position: relative; }
-        
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -19,15 +21,13 @@
         .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-bg-color, #ffffff); padding-bottom: env(safe-area-inset-bottom); z-index: 10; }
         .tab-btn { flex: 1; padding: 12px 0 16px 0; text-align: center; font-size: 12px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s; }
         .tab-btn .icon { font-size: 22px; filter: grayscale(100%); opacity: 0.6; transition: 0.2s; }
-        .tab-btn.active { color: var(--tg-theme-link-color, #007aff); font-weight: 600; }
+        .tab-btn.active { color: var(--accent-color); font-weight: 600; }
         .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; transform: scale(1.1); }
 
-        /* Карточки */
+        /* Карточки и Профиль */
         .card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
         .profile-card { text-align: center; }
-        
-        /* Аватарка */
-        .avatar-container { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, #007aff, #3390ec); display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 122, 255, 0.3); }
+        .avatar-container { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), #3390ec); display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); transition: 0.3s; }
         .avatar-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
         .avatar-fallback { color: white; font-size: 32px; font-weight: bold; }
         .profile-name { font-size: 22px; font-weight: bold; margin: 0 0 5px 0; }
@@ -41,25 +41,15 @@
         /* Статистика */
         .stats-row { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; }
         .stat-box { flex: 1; background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 12px; padding: 15px 10px; text-align: center; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .stat-value { font-size: 20px; font-weight: bold; color: var(--tg-theme-link-color, #007aff); margin: 0 0 4px 0; }
+        .stat-value { font-size: 20px; font-weight: bold; color: var(--accent-color); margin: 0 0 4px 0; transition: color 0.3s;}
         .stat-label { font-size: 12px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
-        /* ================= КНОПКИ (Исправленные фоны) ================= */
+        /* Кнопки */
         .btn-group { display: flex; gap: 10px; margin-top: 10px; }
-        
-        /* Главная синяя кнопка */
-        .action-btn { background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.1s; }
+        .action-btn { background-color: var(--accent-color); color: #fff; border: none; padding: 14px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
         .action-btn:active { transform: scale(0.97); }
-        
-        /* Зеленая кнопка (Оплаты) */
-        .action-btn.green { background-color: #34c759; color: #fff; }
-        
-        /* Вторичные кнопки (Настройки, Изменить, Визитка) */
-        .action-btn.secondary { 
-            background-color: rgba(142, 142, 147, 0.15); /* Идеальный полупрозрачный фон для любой темы */
-            color: var(--tg-theme-text-color, #000); 
-            flex: 1; 
-        }
+        .action-btn.green { background-color: #34c759; }
+        .action-btn.secondary { background-color: rgba(142, 142, 147, 0.15); color: var(--tg-theme-text-color, #000); flex: 1; }
 
         /* Тумблеры */
         .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--tg-theme-hint-color, #eee); }
@@ -68,15 +58,22 @@
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--tg-theme-hint-color, #ccc); transition: .3s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 2px; bottom: 2px; background-color: white; transition: .3s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-        input:checked + .slider { background-color: #34c759; }
+        input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Выбор цвета */
+        .color-dot { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .color-dot:active { transform: scale(0.8); }
 
         /* Модальные окна */
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; animation: slideIn 0.3s cubic-bezier(0.1, 0.8, 0.2, 1); }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        .list-item { background: var(--tg-theme-bg-color, #fff); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--tg-theme-hint-color, #ccc); background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); font-size: 16px; box-sizing: border-box; }
+        .list-item { background: var(--tg-theme-bg-color, #fff); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03); }
+        .input-field { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--tg-theme-hint-color, #ccc); background-color: var(--tg-theme-bg-color, #fff); color: var(--tg-theme-text-color, #000); font-size: 16px; box-sizing: border-box; outline: none; }
+        .input-field:focus { border-color: var(--accent-color); }
         .input-label { font-size: 14px; color: var(--tg-theme-hint-color, #888); margin-bottom: 5px; display: block; }
+        
+        .delete-btn { background: none; border: none; color: #ff3b30; font-size: 24px; cursor: pointer; padding: 0 10px; }
     </style>
 </head>
 <body>
@@ -91,13 +88,13 @@
                     <span id="avatar-fallback" class="avatar-fallback">В</span>
                 </div>
                 <h2 id="user-name" class="profile-name">Загрузка...</h2>
-                <p id="user-subjects" class="profile-role">Преподаватель (Физика, C++)</p>
+                <p id="user-subjects" class="profile-role">Преподаватель</p>
             </div>
 
             <div class="card">
                 <div class="goal-header">
                     <span>План на месяц</span>
-                    <span style="color: var(--tg-theme-link-color, #007aff);">45 000 / 60 000 ₽</span>
+                    <span id="finance-text" style="color: var(--accent-color);">0 / 0 ₽</span>
                 </div>
                 <div class="progress-bg">
                     <div id="finance-progress" class="progress-fill"></div>
@@ -105,8 +102,8 @@
             </div>
 
             <div class="stats-row">
-                <div class="stat-box"><p class="stat-value">12</p><p class="stat-label">Учеников</p></div>
-                <div class="stat-box"><p class="stat-value">1 500 ₽</p><p id="user-rate" class="stat-label">Ставка/час</p></div>
+                <div class="stat-box"><p id="stat-students" class="stat-value">0</p><p class="stat-label">Учеников</p></div>
+                <div class="stat-box"><p id="stat-rate" class="stat-value">0 ₽</p><p class="stat-label">Ставка/час</p></div>
                 <div class="stat-box"><p class="stat-value">98%</p><p class="stat-label">Явка</p></div>
             </div>
 
@@ -118,37 +115,65 @@
                 <button class="action-btn secondary" onclick="openModal('modal-edit')">✏️ Изменить</button>
             </div>
             
-            <!-- КНОПКА ВИЗИТКИ ВЕРНУЛАСЬ -->
-            <button class="action-btn secondary" style="margin-top: 10px;" onclick="tg.showAlert('Ссылка скопирована! Отправь её новому ученику.')">🔗 Поделиться визиткой</button>
+            <!-- Настоящая визитка -->
+            <button class="action-btn secondary" style="margin-top: 10px;" onclick="shareBusinessCard()">🔗 Поделиться визиткой</button>
         </div>
 
         <!-- РАСПИСАНИЕ И ДОМАШКА -->
-        <div id="tab-schedule" class="tab-content"><h2>📅 Расписание</h2><p style="color: var(--tg-theme-hint-color);">Здесь будет функционал календаря.</p></div>
+        <div id="tab-schedule" class="tab-content"><h2>📅 Расписание</h2><p style="color: var(--tg-theme-hint-color);">Здесь будет календарь.</p></div>
         <div id="tab-homework" class="tab-content"><h2>📚 Домашка</h2><p style="color: var(--tg-theme-hint-color);">Здесь будут задания учеников.</p></div>
 
         <!-- ================= МОДАЛКИ ================= -->
-        <div id="modal-students" class="modal"><h2>Мои ученики</h2><div class="list-item"><div><b>Алексей</b><br><span style="font-size:12px; color:gray;">C++ • Пн, Ср</span></div></div></div>
+        
+        <!-- Окно: Ученики (Динамическое) -->
+        <div id="modal-students" class="modal">
+            <h2>Мои ученики</h2>
+            <button class="action-btn secondary" style="margin-bottom: 15px;" onclick="openModal('modal-add-student')">+ Добавить ученика</button>
+            <div id="students-container">
+                <!-- Сюда подгружается список -->
+            </div>
+        </div>
+
+        <!-- Окно: Добавить ученика -->
+        <div id="modal-add-student" class="modal">
+            <h2>Новый ученик</h2>
+            <label class="input-label">Имя ученика</label>
+            <input type="text" id="new-st-name" class="input-field" placeholder="Например: Иван">
+            <label class="input-label">Предмет и расписание</label>
+            <input type="text" id="new-st-desc" class="input-field" placeholder="Например: Физика • Пн, Ср">
+            <button class="action-btn" onclick="addStudent()">Сохранить ученика</button>
+        </div>
+
+        <!-- Окно: Оплаты (Пока статика для визуала) -->
         <div id="modal-payments" class="modal"><h2>Учет оплат</h2><div class="list-item"><span>Алексей (2 урока)</span><span style="color: #ff3b30; font-weight: bold;">- 3 000 ₽</span></div></div>
 
         <!-- Окно: Настройки -->
         <div id="modal-settings" class="modal">
-            <h2>Автоматизация</h2>
+            <h2>Настройки</h2>
             <div class="card" style="padding: 10px 20px;">
+                <div class="settings-row">
+                    <span>Цветовой акцент</span>
+                    <div style="display: flex; gap: 12px;">
+                        <div class="color-dot" style="background: #3390ec;" onclick="changeAccent('#3390ec')"></div>
+                        <div class="color-dot" style="background: #34c759;" onclick="changeAccent('#34c759')"></div>
+                        <div class="color-dot" style="background: #af52de;" onclick="changeAccent('#af52de')"></div>
+                        <div class="color-dot" style="background: #ff9500;" onclick="changeAccent('#ff9500')"></div>
+                    </div>
+                </div>
                 <div class="settings-row">
                     <span>Напоминания ученикам</span>
                     <label class="switch"><input type="checkbox" id="setting-remind" onchange="saveSettings()"><span class="slider"></span></label>
                 </div>
                 <div class="settings-row">
-                    <span>Уведомления об оплате</span>
-                    <label class="switch"><input type="checkbox" id="setting-pay" onchange="saveSettings()"><span class="slider"></span></label>
+                    <span>Скрывать пустые дни</span>
+                    <label class="switch"><input type="checkbox" id="setting-hide" onchange="saveSettings()"><span class="slider"></span></label>
                 </div>
             </div>
-            <p style="font-size: 12px; color: var(--tg-theme-hint-color); text-align: center;">Тема приложения автоматически подстраивается под настройки Telegram.</p>
         </div>
 
         <!-- Окно: Редактирование -->
         <div id="modal-edit" class="modal">
-            <h2>Профиль</h2>
+            <h2>Профиль и Финансы</h2>
             <label class="input-label">Имя и Фамилия</label>
             <input type="text" id="edit-name-input" class="input-field">
             
@@ -157,8 +182,16 @@
             
             <label class="input-label">Стандартная ставка (₽ / час)</label>
             <input type="number" id="edit-rate-input" class="input-field">
+
+            <hr style="border: none; border-top: 1px solid var(--tg-theme-hint-color); margin: 20px 0; opacity: 0.3;">
             
-            <button class="action-btn green" onclick="saveProfile()">Сохранить</button>
+            <label class="input-label">Текущий доход (₽)</label>
+            <input type="number" id="edit-income-input" class="input-field">
+
+            <label class="input-label">Цель на месяц (₽)</label>
+            <input type="number" id="edit-goal-input" class="input-field">
+            
+            <button class="action-btn" onclick="saveProfile()">Сохранить все</button>
         </div>
     </div>
 
@@ -173,33 +206,58 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-
-        // 1. НАСТРОЙКА ТЕМЫ
         tg.setHeaderColor('secondary_bg_color');
 
-        // 2. РАБОТА С ПАМЯТЬЮ
         const user = tg.initDataUnsafe?.user;
         let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Умный Репетитор";
         
+        // --- 1. ЗАГРУЗКА ДАННЫХ ---
         let savedName = localStorage.getItem('tutorName') || defaultName;
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = localStorage.getItem('tutorRate') || "1500";
+        let savedIncome = localStorage.getItem('tutorIncome') || "45000";
+        let savedGoal = localStorage.getItem('tutorGoal') || "60000";
+        let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
         
-        let settingRemind = localStorage.getItem('setRemind') === 'true';
-        let settingPay = localStorage.getItem('setPay') !== 'false';
+        // Список учеников
+        let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [
+            {name: 'Алексей', desc: 'C++ • Пн, Ср'},
+            {name: 'Мария', desc: 'Физика • Вт, Чт'}
+        ];
 
-        document.getElementById('user-name').innerText = savedName;
-        document.getElementById('edit-name-input').value = savedName;
-        
-        document.getElementById('user-subjects').innerText = "Преподаватель (" + savedSubjects + ")";
-        document.getElementById('edit-subjects-input').value = savedSubjects;
-        
-        document.getElementById('user-rate').innerText = "Ставка: " + savedRate + " ₽";
-        document.getElementById('edit-rate-input').value = savedRate;
+        let settingRemind = localStorage.getItem('setRemind') !== 'false'; // По умолчанию включено
+        let settingHide = localStorage.getItem('setHide') === 'true';
 
-        document.getElementById('setting-remind').checked = settingRemind;
-        document.getElementById('setting-pay').checked = settingPay;
+        // --- 2. ПРИМЕНЕНИЕ ДАННЫХ К ИНТЕРФЕЙСУ ---
+        document.documentElement.style.setProperty('--accent-color', savedAccent);
 
+        function updateUI() {
+            document.getElementById('user-name').innerText = savedName;
+            document.getElementById('user-subjects').innerText = "Преподаватель (" + savedSubjects + ")";
+            document.getElementById('stat-rate').innerText = savedRate + " ₽";
+            
+            // Заполнение форм
+            document.getElementById('edit-name-input').value = savedName;
+            document.getElementById('edit-subjects-input').value = savedSubjects;
+            document.getElementById('edit-rate-input').value = savedRate;
+            document.getElementById('edit-income-input').value = savedIncome;
+            document.getElementById('edit-goal-input').value = savedGoal;
+            
+            document.getElementById('setting-remind').checked = settingRemind;
+            document.getElementById('setting-hide').checked = settingHide;
+
+            // Логика прогресс-бара
+            document.getElementById('finance-text').innerText = `${savedIncome} / ${savedGoal} ₽`;
+            let percent = savedGoal > 0 ? (savedIncome / savedGoal) * 100 : 0;
+            if (percent > 100) percent = 100;
+            document.getElementById('finance-progress').style.width = '0%'; // сброс для анимации
+            setTimeout(() => { document.getElementById('finance-progress').style.width = percent + '%'; }, 100);
+            
+            // Счетчик учеников на главном экране
+            document.getElementById('stat-students').innerText = studentsList.length;
+        }
+
+        // --- 3. АВАТАРКА ---
         if (user && user.photo_url) {
             document.getElementById('user-avatar').src = user.photo_url;
             document.getElementById('user-avatar').style.display = 'block';
@@ -208,37 +266,90 @@
             document.getElementById('avatar-fallback').innerText = savedName.charAt(0).toUpperCase();
         }
 
-        setTimeout(() => {
-            document.getElementById('finance-progress').style.width = '75%';
-        }, 300);
+        // --- 4. ЛОГИКА УЧЕНИКОВ ---
+        function renderStudents() {
+            const container = document.getElementById('students-container');
+            container.innerHTML = '';
+            if(studentsList.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:gray; font-size:14px;">Список пуст. Добавьте ученика.</p>';
+            }
+            studentsList.forEach((st, index) => {
+                container.innerHTML += `
+                    <div class="list-item">
+                        <div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">${st.desc}</span></div>
+                        <button class="delete-btn" onclick="removeStudent(${index})">×</button>
+                    </div>`;
+            });
+            document.getElementById('stat-students').innerText = studentsList.length;
+        }
 
-        // 3. ФУНКЦИИ СОХРАНЕНИЯ
+        function removeStudent(index) {
+            tg.HapticFeedback.impactOccurred('light');
+            studentsList.splice(index, 1);
+            localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
+            renderStudents();
+        }
+
+        function addStudent() {
+            const name = document.getElementById('new-st-name').value;
+            const desc = document.getElementById('new-st-desc').value;
+            if(name.trim() !== "") {
+                studentsList.push({name: name, desc: desc || "Без расписания"});
+                localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
+                document.getElementById('new-st-name').value = '';
+                document.getElementById('new-st-desc').value = '';
+                renderStudents();
+                tg.HapticFeedback.notificationOccurred('success');
+                openModal('modal-students'); // Возвращаемся к списку
+            } else {
+                tg.showAlert("Пожалуйста, введи имя ученика!");
+            }
+        }
+
+        // --- 5. СОХРАНЕНИЕ ПРОФИЛЯ И НАСТРОЕК ---
         function saveProfile() {
-            const newName = document.getElementById('edit-name-input').value;
-            const newSubjects = document.getElementById('edit-subjects-input').value;
-            const newRate = document.getElementById('edit-rate-input').value;
+            savedName = document.getElementById('edit-name-input').value;
+            savedSubjects = document.getElementById('edit-subjects-input').value;
+            savedRate = document.getElementById('edit-rate-input').value;
+            savedIncome = document.getElementById('edit-income-input').value;
+            savedGoal = document.getElementById('edit-goal-input').value;
             
-            localStorage.setItem('tutorName', newName);
-            localStorage.setItem('tutorSubjects', newSubjects);
-            localStorage.setItem('tutorRate', newRate);
+            localStorage.setItem('tutorName', savedName);
+            localStorage.setItem('tutorSubjects', savedSubjects);
+            localStorage.setItem('tutorRate', savedRate);
+            localStorage.setItem('tutorIncome', savedIncome);
+            localStorage.setItem('tutorGoal', savedGoal);
             
-            document.getElementById('user-name').innerText = newName;
-            document.getElementById('user-subjects').innerText = "Преподаватель (" + newSubjects + ")";
-            document.getElementById('user-rate').innerText = "Ставка: " + newRate + " ₽";
-            
+            updateUI();
             tg.HapticFeedback.notificationOccurred('success');
             closeModal();
         }
 
         function saveSettings() {
-            const remind = document.getElementById('setting-remind').checked;
-            const pay = document.getElementById('setting-pay').checked;
-            localStorage.setItem('setRemind', remind);
-            localStorage.setItem('setPay', pay);
+            settingRemind = document.getElementById('setting-remind').checked;
+            settingHide = document.getElementById('setting-hide').checked;
+            localStorage.setItem('setRemind', settingRemind);
+            localStorage.setItem('setHide', settingHide);
             tg.HapticFeedback.selectionChanged();
         }
 
-        // 4. НАВИГАЦИЯ И МОДАЛКИ
+        function changeAccent(color) {
+            savedAccent = color;
+            localStorage.setItem('tutorAccent', color);
+            document.documentElement.style.setProperty('--accent-color', color);
+            tg.HapticFeedback.selectionChanged();
+        }
+
+        // --- 6. ВИЗИТКА ---
+        function shareBusinessCard() {
+            tg.HapticFeedback.impactOccurred('medium');
+            const text = encodeURIComponent(`Привет! Я ${savedName}, преподаватель (${savedSubjects}). Записывайся ко мне на занятия!`);
+            // Перекидываем пользователя в окно выбора чата для пересылки
+            const shareUrl = `https://t.me/share/url?url=https://t.me/TutorScheduleBot&text=${text}`;
+            tg.openTelegramLink(shareUrl);
+        }
+
+        // --- 7. НАВИГАЦИЯ И МОДАЛКИ ---
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -250,6 +361,7 @@
         let activeModal = null;
         function openModal(modalId) {
             tg.HapticFeedback.impactOccurred('medium');
+            if (activeModal) activeModal.style.display = 'none'; // Скрываем предыдущую, если открываем поверх
             activeModal = document.getElementById(modalId);
             activeModal.style.display = 'block';
             document.getElementById('bottom-nav').style.display = 'none';
@@ -262,6 +374,10 @@
             tg.BackButton.hide();
         }
         tg.BackButton.onClick(function() { closeModal(); });
+
+        // Инициализация при старте
+        updateUI();
+        renderStudents();
     </script>
 </body>
 </html>
