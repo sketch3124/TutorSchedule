@@ -632,12 +632,25 @@
             tg.HapticFeedback.selectionChanged();
         }
 
-        function shareBusinessCard() {
+                function shareBusinessCard() {
             tg.HapticFeedback.impactOccurred('medium');
-            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего бота. Жми на ссылку! 👇`;
-            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(savedBotLink)}&text=${encodeURIComponent(cardText)}`;
+            
+            // Берем актуальный ID пользователя (или дефолтный, если запуск вне Telegram)
+            let currentTutorId = user ? user.id : 12345;
+            
+            // Формируем персональную глубокую ссылку (Deep Link) именно на твой профиль
+            let personalLink = `https://t.me/TutorScheduleBot?start=tutor_${currentTutorId}`;
+            
+            // Красивый текст визитки
+            const cardText = `👨‍🏫 Репетитор: ${savedName}\n📚 Предметы: ${savedSubjects}\n\n🗓 Узнать расписание, цены и записаться на занятие можно через моего удобного бота-помощника. Жми на ссылку! 👇`;
+            
+            // Ссылка для системного окна «Поделиться» в Telegram
+            const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(personalLink)}&text=${encodeURIComponent(cardText)}`;
+            
+            // Открываем окно выбора чата
             tg.openTelegramLink(shareUrl);
         }
+
 
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
