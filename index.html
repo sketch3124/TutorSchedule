@@ -4,150 +4,112 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Умный Репетитор</title>
-    <!-- Подключаем библиотеку Telegram -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        /* Базовые настройки для эффекта приложения */
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh; /* Высота строго на весь экран */
-            overflow: hidden; /* Убираем общую прокрутку */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
         }
+        .content-area { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Стили для нижней панели */
+        .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); padding-bottom: env(safe-area-inset-bottom); }
+        .tab-btn { flex: 1; padding: 12px 0 16px 0; text-align: center; font-size: 12px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .tab-btn .icon { font-size: 22px; filter: grayscale(100%); opacity: 0.6; }
+        .tab-btn.active { color: var(--tg-theme-link-color, #007aff); font-weight: 600; }
+        .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; }
 
-        /* Зона контента (занимает всё свободное место) */
-        .content-area {
-            flex-grow: 1;
-            overflow-y: auto; /* Прокрутка только внутри вкладки */
-            padding: 20px;
-        }
-
-        /* Скрываем вкладки по умолчанию */
-        .tab-content {
-            display: none;
-        }
-
-        /* Класс для активной вкладки */
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.2s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Нижняя панель навигации (Tab Bar) */
-        .tab-bar {
-            display: flex;
-            border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5);
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            padding-bottom: env(safe-area-inset-bottom); /* Отступ для полоски на iPhone */
-        }
-
-        /* Кнопки в панели навигации */
-        .tab-btn {
-            flex: 1;
-            padding: 12px 0 16px 0;
-            text-align: center;
-            font-size: 12px;
-            color: var(--tg-theme-hint-color, #999999);
-            cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Иконки вкладок (используем эмодзи для скорости) */
-        .tab-btn .icon {
-            font-size: 22px;
-            filter: grayscale(100%);
-            opacity: 0.6;
-        }
-
-        /* Стиль для нажатой (активной) кнопки */
-        .tab-btn.active {
-            color: var(--tg-theme-link-color, #007aff);
-            font-weight: 600;
-        }
-        .tab-btn.active .icon {
-            filter: grayscale(0%);
-            opacity: 1;
-        }
+        /* Стили для расписания */
+        .slot { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; background-color: var(--tg-theme-secondary-bg-color, #f4f4f5); border-radius: 10px; }
+        .slot-time { font-weight: bold; color: var(--tg-theme-link-color, #007aff); }
+        .add-btn { background-color: var(--tg-theme-button-color, #3390ec); color: var(--tg-theme-button-text-color, #fff); border: none; padding: 12px; border-radius: 8px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-    <!-- ================= ЗОНА КОНТЕНТА ================= -->
     <div class="content-area">
         
         <!-- Вкладка 1: Расписание -->
         <div id="tab-schedule" class="tab-content active">
-            <h2>📅 Расписание</h2>
-            <p>Здесь будет красивая сетка уроков на сегодня.</p>
+            <h2>📅 Расписание на сегодня</h2>
+            
+            <!-- Контейнер, куда будут добавляться слоты учеников -->
+            <div id="slots-container">
+                <div class="slot">
+                    <span class="slot-time">15:00</span>
+                    <span class="slot-name">Алексей (Математика)</span>
+                </div>
+            </div>
+
+            <!-- Функциональная кнопка добавления (пока показывает уведомление) -->
+            <button class="add-btn" onclick="addSlot()">+ Добавить урок</button>
         </div>
 
         <!-- Вкладка 2: Домашка -->
         <div id="tab-homework" class="tab-content">
             <h2>📚 Домашние задания</h2>
-            <p>Здесь будет список учеников и их загруженные файлы.</p>
+            <p>Здесь появится список учеников, сдавших работу.</p>
         </div>
 
         <!-- Вкладка 3: Профиль -->
         <div id="tab-profile" class="tab-content">
-            <h2>⚙️ Профиль</h2>
-            <p>Здесь будет статистика, учет оплат и настройки напоминаний.</p>
+            <!-- Вот здесь JS автоматически подставит имя из Телеграма -->
+            <h2 id="user-greeting">⚙️ Профиль</h2>
+            <p>Статус: <b>Преподаватель</b></p>
         </div>
 
     </div>
 
-    <!-- ================= НИЖНЯЯ НАВИГАЦИЯ ================= -->
+    <!-- Нижняя навигация -->
     <div class="tab-bar">
         <div class="tab-btn active" onclick="switchTab('tab-schedule', this)">
-            <span class="icon">📅</span>
-            <span>Расписание</span>
+            <span class="icon">📅</span><span>Расписание</span>
         </div>
         <div class="tab-btn" onclick="switchTab('tab-homework', this)">
-            <span class="icon">📚</span>
-            <span>Домашка</span>
+            <span class="icon">📚</span><span>Домашка</span>
         </div>
         <div class="tab-btn" onclick="switchTab('tab-profile', this)">
-            <span class="icon">⚙️</span>
-            <span>Профиль</span>
+            <span class="icon">⚙️</span><span>Профиль</span>
         </div>
     </div>
 
-    <!-- ================= ЛОГИКА (JavaScript) ================= -->
     <script>
-        // Инициализация Telegram
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Функция переключения вкладок
+        // ФУНКЦИОНАЛ 1: Автоматическое приветствие по имени
+        // Мы вытаскиваем объект user из данных Telegram
+        const user = tg.initDataUnsafe?.user;
+        if (user) {
+            // Если данные есть, подставляем имя пользователя (first_name)
+            document.getElementById('user-greeting').innerText = `👋 Здравствуйте, ${user.first_name}!`;
+        } else {
+            // Заглушка, если открыть файл просто в браузере на компе
+            document.getElementById('user-greeting').innerText = `👋 Здравствуйте, Репетитор!`;
+        }
+
+        // ФУНКЦИОНАЛ 2: Переключение вкладок
         function switchTab(tabId, btnElement) {
-            // 1. Скрываем весь контент
-            const allTabs = document.querySelectorAll('.tab-content');
-            allTabs.forEach(tab => tab.classList.remove('active'));
-
-            // 2. Убираем подсветку со всех кнопок
-            const allBtns = document.querySelectorAll('.tab-btn');
-            allBtns.forEach(btn => btn.classList.remove('active'));
-
-            // 3. Показываем нужный контент и подсвечиваем нажатую кнопку
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
-
-            // 4. Даем приятную тактильную отдачу (вибрацию) при переключении
             tg.HapticFeedback.impactOccurred('light');
+        }
+
+        // ФУНКЦИОНАЛ 3: Реакция на кнопку добавления урока
+        function addSlot() {
+            tg.HapticFeedback.impactOccurred('medium');
+            // Показываем нативное всплывающее окно Telegram
+            tg.showAlert("Здесь скоро откроется меню выбора времени и ученика!");
         }
     </script>
 </body>
