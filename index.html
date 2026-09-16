@@ -8,7 +8,6 @@
     
     <style>
         :root { --accent-color: var(--tg-theme-button-color, #3390ec); }
-
         * { box-sizing: border-box; }
         body { margin: 0; padding: 0; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); color: var(--tg-theme-text-color, #000000); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; transition: background-color 0.3s, color 0.3s; }
         .content-area { flex-grow: 1; overflow-y: auto; padding: 16px; position: relative; width: 100%; }
@@ -16,19 +15,15 @@
         .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* Навигация */
         .tab-bar { display: flex; border-top: 1px solid var(--tg-theme-hint-color, #e5e5e5); background-color: var(--tg-theme-bg-color, #ffffff); padding-bottom: env(safe-area-inset-bottom); z-index: 10; flex-shrink: 0; }
         .tab-btn { flex: 1; padding: 10px 0 14px 0; text-align: center; font-size: 11px; color: var(--tg-theme-hint-color, #999999); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: 0.2s; }
         .tab-btn .icon { font-size: 20px; filter: grayscale(100%); opacity: 0.6; transition: 0.2s; }
         .tab-btn.active { color: var(--accent-color); font-weight: 600; }
         .tab-btn.active .icon { filter: grayscale(0%); opacity: 1; transform: scale(1.1); }
 
-        /* Карточки */
         .card { background-color: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); margin-bottom: 16px; width: 100%; }
         .profile-card { text-align: center; }
         .avatar-container { width: 72px; height: 72px; margin: 0 auto 12px auto; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), #3390ec); display: flex; justify-content: center; align-items: center; overflow: hidden; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
-        .avatar-container img { width: 100%; height: 100%; object-fit: cover; display: none; }
-        .avatar-fallback { color: white; font-size: 28px; font-weight: bold; }
         .profile-name { font-size: 20px; font-weight: bold; margin: 0 0 4px 0; word-break: break-word; }
         .profile-role { font-size: 13px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
@@ -41,14 +36,12 @@
         .stat-value { font-size: 16px; font-weight: bold; color: var(--accent-color); margin: 0 0 2px 0; word-break: break-all; }
         .stat-label { font-size: 11px; color: var(--tg-theme-hint-color, #888); margin: 0; }
 
-        /* Кнопки */
         .action-btn { background-color: var(--accent-color); color: #fff; border: none; padding: 13px; border-radius: 12px; width: 100%; font-size: 15px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s; }
         .action-btn:active { transform: scale(0.97); }
         .action-btn.green { background-color: #34c759; }
         .action-btn.red { background-color: #ff3b30; }
         .action-btn.secondary { background-color: rgba(142, 142, 147, 0.15); color: var(--tg-theme-text-color, #000); flex: 1; }
 
-        /* Верхняя панель календаря со стрелочкой */
         .calendar-header-panel { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .calendar-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; flex-grow: 1; margin-right: 8px; }
         .calendar-nav::-webkit-scrollbar { display: none; }
@@ -63,13 +56,9 @@
         .day-badge { position: absolute; top: 4px; right: 4px; background: #34c759; color: white; font-size: 9px; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .day-badge.empty { background: var(--tg-theme-secondary-bg-color, #e5e5ea); color: var(--tg-theme-hint-color, #888); }
 
-        /* Кнопка-стрелочка вниз для вызова календаря */
         .big-cal-btn { background: var(--tg-theme-bg-color, #fff); border: 1px solid var(--tg-theme-hint-color, #ccc); border-radius: 10px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; box-shadow: 0 2px 6px rgba(0,0,0,0.03); color: var(--tg-theme-text-color, #000); }
-
-        /* Скрытый нативный инпут календаря для мгновенного вызова */
         #hidden-date-picker { position: absolute; opacity: 0; pointer-events: none; width: 0; height: 0; }
 
-        /* Слоты расписания */
         .slot { background-color: var(--tg-theme-bg-color, #fff); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.03); border-left: 4px solid transparent; cursor: pointer; }
         .slot.booked { border-left-color: #34c759; }
         .slot.debt { border-left-color: #ff3b30; }
@@ -84,9 +73,6 @@
         .day-check { flex: 1; padding: 8px 0; text-align: center; background: var(--tg-theme-bg-color, #fff); border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; border: 1px solid var(--tg-theme-hint-color, #ccc); user-select: none; }
         .day-check.selected { background: var(--accent-color); color: #fff; border-color: var(--accent-color); }
 
-        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--tg-theme-hint-color, #eee); }
-        .settings-row:last-child { border-bottom: none; }
-        
         .modal { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--tg-theme-secondary-bg-color, #f0f2f5); z-index: 100; overflow-y: auto; padding: 16px; box-sizing: border-box; animation: slideIn 0.25s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
         .list-item { background: var(--tg-theme-bg-color, #fff); padding: 12px 14px; border-radius: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
@@ -103,12 +89,10 @@
         <!-- ПРОФИЛЬ -->
         <div id="tab-profile" class="tab-content">
             <div class="card profile-card">
-                <div class="avatar-container"><img id="user-avatar" src="" alt="Avatar"><span id="avatar-fallback" class="avatar-fallback">В</span></div>
                 <h2 id="user-name" class="profile-name">Загрузка...</h2>
                 <p id="user-subjects" class="profile-role">Преподаватель</p>
             </div>
             
-            <!-- Финансовая шкала на основе реальных оплат -->
             <div class="card">
                 <div class="goal-header"><span>Заработано / Цель</span><span id="finance-text" style="color: var(--accent-color);">0 / 0 ₽</span></div>
                 <div class="progress-bg"><div id="finance-progress" class="progress-fill"></div></div>
@@ -130,18 +114,13 @@
 
         <!-- РАСПИСАНИЕ -->
         <div id="tab-schedule" class="tab-content active">
-            
-            <!-- Верхняя панель календаря + стрелочка вниз для вызова календаря -->
             <div class="calendar-header-panel">
                 <div class="calendar-nav" id="calendar-slider"></div>
-                <!-- Кнопка со стрелочкой вниз -->
                 <div class="big-cal-btn" onclick="triggerNativeCalendar()" title="Выбрать дату">▼</div>
-                <!-- Скрытый инпут типа date для вызова системного календаря устройства -->
                 <input type="date" id="hidden-date-picker" onchange="onNativeDatePicked(this)">
             </div>
             
             <h3 id="selected-date-title" style="margin: 6px 0 12px 0; font-size: 15px;">Расписание</h3>
-            
             <div id="slots-container"></div>
         </div>
 
@@ -159,18 +138,21 @@
             <div id="students-container"></div>
         </div>
 
-        <!-- Добавление / Редактирование ученика с индивидуальной ставкой -->
+        <!-- Добавление ученика с Telegram ID -->
         <div id="modal-add-student" class="modal">
             <h2 id="st-modal-title">Новый ученик</h2>
             <input type="hidden" id="editing-st-index" value="-1">
             <label class="input-label">Имя ученика</label>
             <input type="text" id="new-st-name" class="input-field" placeholder="Например: Алексей">
             
+            <label class="input-label">Telegram ID ученика (число)</label>
+            <input type="number" id="new-st-tgid" class="input-field" placeholder="Например: 123456789">
+
             <label class="input-label">Предмет</label>
             <input type="text" id="new-st-subject" class="input-field" placeholder="Например: C++">
 
-            <label class="input-label">Индивидуальная ставка (₽/час)</label>
-            <input type="number" id="new-st-rate" class="input-field" placeholder="Если пусто, берется общая ставка">
+            <label class="input-label">Ставка (₽/час)</label>
+            <input type="number" id="new-st-rate" class="input-field" placeholder="Если пусто, общая ставка">
 
             <label class="input-label">Время урока</label>
             <input type="time" id="new-st-time" class="input-field" value="15:00">
@@ -189,13 +171,11 @@
             <button class="action-btn" onclick="saveStudentData()">Сохранить ученика</button>
         </div>
 
-        <!-- Учет оплат и детальная статистика -->
         <div id="modal-payments" class="modal">
             <h2>Учет оплат и долги</h2>
             <div id="payments-list-container"></div>
         </div>
 
-        <!-- Управление уроком -->
         <div id="modal-slot-action" class="modal">
             <h2 id="slot-modal-title">Управление уроком</h2>
             <p id="slot-modal-subtitle" style="color: var(--tg-theme-hint-color); margin-bottom: 15px; font-size:13px;"></p>
@@ -203,11 +183,11 @@
             <button id="btn-done-toggle" class="action-btn secondary" style="margin-bottom: 8px;" onclick="toggleLessonDone()">✅ Урок состоялся</button>
             <button id="btn-pay-toggle" class="action-btn green" style="margin-bottom: 12px;" onclick="togglePaymentStatus()">💳 Отметить оплаченным</button>
             
-            <label class="input-label">Разово перенести на время:</label>
+            <label class="input-label">Перенести на время:</label>
             <input type="time" id="reschedule-time-input" class="input-field">
             <button class="action-btn secondary" style="margin-bottom: 12px;" onclick="rescheduleLesson()">🔄 Перенести на сегодня</button>
 
-            <button class="action-btn red" onclick="deleteTodayLesson()">🗑 Удалить урок только на сегодня</button>
+            <button class="action-btn red" onclick="deleteTodayLesson()">🗑 Удалить только на сегодня</button>
         </div>
 
         <div id="modal-settings" class="modal">
@@ -221,9 +201,9 @@
             <h2>Профиль и Финансы</h2>
             <label class="input-label">Имя и Фамилия</label><input type="text" id="edit-name-input" class="input-field">
             <label class="input-label">Предметы</label><input type="text" id="edit-subjects-input" class="input-field">
-            <label class="input-label">Ссылка на бота</label><input type="text" id="edit-bot-link" class="input-field">
-            <label class="input-label">Общая ставка по умолчанию (₽/час)</label><input type="number" id="edit-rate-input" class="input-field">
-            <label class="input-label">Финансовая цель на месяц (₽)</label><input type="number" id="edit-goal-input" class="input-field">
+            <label class="input-label">Ссылка на визитку бота</label><input type="text" id="edit-bot-link" class="input-field">
+            <label class="input-label">Ставка по умолчанию (₽/час)</label><input type="number" id="edit-rate-input" class="input-field">
+            <label class="input-label">Цель на месяц (₽)</label><input type="number" id="edit-goal-input" class="input-field">
             <button class="action-btn" onclick="saveProfile()">Сохранить</button>
         </div>
     </div>
@@ -241,52 +221,53 @@
         tg.expand();
         tg.setHeaderColor('secondary_bg_color');
 
+        // Считываем параметры из URL (роль и tutor_id)
+        const urlParams = new URLSearchParams(window.location.search);
+        const userRole = urlParams.get('role') || 'tutor'; // 'tutor' или 'student'
+        const targetTutorId = urlParams.get('tutor_id');
+
         const user = tg.initDataUnsafe?.user;
-        let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Умный Репетитор";
+        let defaultName = user ? (user.first_name + (user.last_name ? ' ' + user.last_name : '')) : "Пользователь";
         
         let savedName = localStorage.getItem('tutorName') || defaultName;
         let savedSubjects = localStorage.getItem('tutorSubjects') || "Физика, C++";
         let savedRate = Number(localStorage.getItem('tutorRate') || 1500);
         let savedGoal = Number(localStorage.getItem('tutorGoal') || 60000);
         let savedAccent = localStorage.getItem('tutorAccent') || "#3390ec";
-        let savedBotLink = localStorage.getItem('tutorBotLink') || "https://t.me/TutorScheduleBot";
+        let savedBotLink = localStorage.getItem('tutorBotLink') || `https://t.me/TutorScheduleBot?start=tutor_${user?.id || 123}`;
 
         let studentsList = JSON.parse(localStorage.getItem('tutorStudents')) || [
-            {name: 'Алексей', subject: 'C++', rate: '', time: '15:00', days: [1, 3]}
+            {name: 'Алексей', tgId: '', subject: 'C++', rate: '', time: '15:00', days: [1, 3]}
         ];
-        
         let lessonsState = JSON.parse(localStorage.getItem('tutorLessons')) || {}; 
         let selectedDateStr = formatDateKey(new Date());
 
         document.documentElement.style.setProperty('--accent-color', savedAccent);
 
-        // --- КАЛЕНДАРЬ И СТРЕЛОЧКА ---
+        // --- АДАПТАЦИЯ ПОД РОЛЬ (ПРЕПОДАВАТЕЛЬ / УЧЕНИК) ---
+        if (userRole === 'student') {
+            // Если зашел ученик, скрываем вкладку Профиль (или делаем её страницей информации о преподавателе)
+            document.querySelectorAll('.tab-btn')[0].style.display = 'none'; // Скрываем кнопку профиля
+            // Можем переключить на расписание
+        }
+
+        // --- КАЛЕНДАРЬ ---
         function buildCalendar() {
             const slider = document.getElementById('calendar-slider');
             slider.innerHTML = '';
-            
             const today = new Date();
             for (let i = 0; i < 180; i++) {
                 let d = new Date();
                 d.setDate(today.getDate() + i);
-                
                 let dateKey = formatDateKey(d);
                 let dayNum = d.getDate();
                 let monthNames = ["янв", "фев", "мар", "апр", "май", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
                 let weekDays = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
-                let wDay = weekDays[d.getDay()];
-                let mName = monthNames[d.getMonth()];
-
                 let count = getLessonsCountForDate(dateKey, d.getDay());
 
                 let div = document.createElement('div');
                 div.className = `cal-day ${dateKey === selectedDateStr ? 'active' : ''}`;
-                div.innerHTML = `
-                    <span>${wDay}</span>
-                    <b>${dayNum}</b>
-                    <small>${mName}</small>
-                    <div class="day-badge ${count === 0 ? 'empty' : ''}">${count}</div>
-                `;
+                div.innerHTML = `<span>${weekDays[d.getDay()]}</span><b>${dayNum}</b><small>${monthNames[d.getMonth()]}</small><div class="day-badge ${count === 0 ? 'empty' : ''}">${count}</div>`;
                 div.onclick = () => selectCalendarDay(d, dateKey, div);
                 slider.appendChild(div);
             }
@@ -315,13 +296,11 @@
             document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('active'));
             if(element) element.classList.add('active');
             selectedDateStr = dateKey;
-            
             let options = { day: 'numeric', month: 'long', weekday: 'long' };
             document.getElementById('selected-date-title').innerText = "Расписание на " + dateObj.toLocaleDateString('ru-RU', options);
             renderSlotsForSelectedDate();
         }
 
-        // Вызов нативного выпадающего календаря устройства по стрелочке
         function triggerNativeCalendar() {
             tg.HapticFeedback.impactOccurred('medium');
             let picker = document.getElementById('hidden-date-picker');
@@ -344,7 +323,6 @@
         function renderSlotsForSelectedDate() {
             const container = document.getElementById('slots-container');
             container.innerHTML = '';
-
             let targetDate = new Date(selectedDateStr);
             let dayOfWeek = targetDate.getDay();
 
@@ -359,7 +337,7 @@
                     let isDone = lessonsState[key]?.done || false;
                     let stRate = (st.rate !== '' && !isNaN(st.rate)) ? Number(st.rate) : savedRate;
 
-                    dayLessons.push({ stIndex, name: st.name, subject: st.subject, time: lessonTime, paid: isPaid, done: isDone, rate: stRate, key });
+                    dayLessons.push({ stIndex, name: st.name, tgId: st.tgId, subject: st.subject, time: lessonTime, paid: isPaid, done: isDone, rate: stRate, key });
                 }
             });
 
@@ -375,8 +353,11 @@
                 let statusClass = les.done ? 'done' : (les.paid ? 'booked' : 'debt');
                 let priceText = les.done ? 'Состоялся' : (les.paid ? `${les.rate} ₽` : 'Долг');
                 
+                // Если зашел ученик, запрещаем кликать на чужие слоты для администрирования
+                let clickAction = userRole === 'tutor' ? `openSlotAction('${les.key}', '${les.name}', '${les.time}')` : `tg.showAlert('Занятие ученика: ${les.name}')`;
+
                 container.innerHTML += `
-                    <div class="slot ${statusClass}" onclick="openSlotAction('${les.key}', '${les.name}', '${les.time}')">
+                    <div class="slot ${statusClass}" onclick="${clickAction}">
                         <div>
                             <div class="slot-time">${les.time}</div>
                             <div class="slot-info"><b>${les.name}</b> • ${les.subject}</div>
@@ -389,8 +370,8 @@
 
         // --- УПРАВЛЕНИЕ УРОКОМ ---
         let activeLessonKey = null;
-
         function openSlotAction(key, name, time) {
+            if (userRole !== 'tutor') return;
             activeLessonKey = key;
             if(!lessonsState[key]) lessonsState[key] = { paid: false, time, done: false, deleted: false };
 
@@ -402,21 +383,16 @@
             let isDone = lessonsState[key].done;
 
             let payBtn = document.getElementById('btn-pay-toggle');
-            payBtn.innerText = isPaid ? "❌ Снять отметку об оплате" : "💳 Отметить оплаченным";
-            payBtn.className = isPaid ? "action-btn secondary" : "action-btn green";
-
+            payBtn.innerText = isPaid ? "❌ Снять оплату" : "💳 Отметить оплаченным";
             let doneBtn = document.getElementById('btn-done-toggle');
             doneBtn.innerText = isDone ? "↩️ Вернуть в активные" : "✅ Урок состоялся";
-            doneBtn.className = isDone ? "action-btn secondary" : "action-btn green";
 
             openModal('modal-slot-action');
         }
 
         function togglePaymentStatus() {
             tg.HapticFeedback.notificationOccurred('success');
-            if(lessonsState[activeLessonKey]) {
-                lessonsState[activeLessonKey].paid = !lessonsState[activeLessonKey].paid;
-            }
+            if(lessonsState[activeLessonKey]) lessonsState[activeLessonKey].paid = !lessonsState[activeLessonKey].paid;
             localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
             closeModal();
             renderSlotsForSelectedDate();
@@ -424,9 +400,7 @@
 
         function toggleLessonDone() {
             tg.HapticFeedback.notificationOccurred('success');
-            if(lessonsState[activeLessonKey]) {
-                lessonsState[activeLessonKey].done = !lessonsState[activeLessonKey].done;
-            }
+            if(lessonsState[activeLessonKey]) lessonsState[activeLessonKey].done = !lessonsState[activeLessonKey].done;
             localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
             closeModal();
             renderSlotsForSelectedDate();
@@ -447,7 +421,7 @@
         }
 
         function deleteTodayLesson() {
-            tg.HapticFeedback.warningOccurred();
+            tg.HapticFeedback.notificationOccurred('warning');
             if(!lessonsState[activeLessonKey]) lessonsState[activeLessonKey] = {};
             lessonsState[activeLessonKey].deleted = true;
             localStorage.setItem('tutorLessons', JSON.stringify(lessonsState));
@@ -456,15 +430,12 @@
             buildCalendar();
         }
 
-        // --- ФИНАНСЫ И СТАТИСТИКА (НА ОСНОВЕ ОПЛАТ) ---
+        // --- ФИНАНСЫ ---
         function updateFinanceStats() {
             let totalEarned = 0;
-            
-            // Считаем сумму по всем оплаченным урокам во всей базе
             Object.keys(lessonsState).forEach(k => {
                 let les = lessonsState[k];
                 if(les && les.paid && !les.deleted) {
-                    // Ключ имеет формат YYYY-MM-DD_stIndex
                     let parts = k.split('_');
                     let stIndex = parseInt(parts[1]);
                     if(!isNaN(stIndex) && studentsList[stIndex]) {
@@ -477,19 +448,13 @@
 
             document.getElementById('stat-earned').innerText = totalEarned + " ₽";
             document.getElementById('finance-text').innerText = `${totalEarned} / ${savedGoal} ₽`;
-            
             let percent = savedGoal > 0 ? (totalEarned / savedGoal) * 100 : 0;
             if (percent > 100) percent = 100;
             document.getElementById('finance-progress').style.width = percent + '%';
 
-            // Явка
-            let total = 0;
-            let doneCount = 0;
+            let total = 0, doneCount = 0;
             Object.values(lessonsState).forEach(les => {
-                if(!les.deleted) {
-                    total++;
-                    if(les.done) doneCount++;
-                }
+                if(!les.deleted) { total++; if(les.done) doneCount++; }
             });
             let attPercent = total > 0 ? Math.round((doneCount / total) * 100) : 100;
             document.getElementById('stat-attendance').innerText = attPercent + "%";
@@ -499,44 +464,29 @@
             tg.HapticFeedback.impactOccurred('medium');
             const container = document.getElementById('payments-list-container');
             container.innerHTML = '';
-            
-            if(studentsList.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:gray;">Нет учеников.</p>';
-                openModal('modal-payments');
-                return;
-            }
-
             studentsList.forEach((st, stIndex) => {
-                let unpaidSum = 0;
-                let paidSum = 0;
+                let unpaidSum = 0, paidSum = 0;
                 let stRate = (st.rate !== '' && !isNaN(st.rate)) ? Number(st.rate) : savedRate;
-
                 Object.keys(lessonsState).forEach(k => {
                     if(k.endsWith(`_${stIndex}`)) {
                         let les = lessonsState[k];
                         if(!les.deleted && les.done) {
-                            if(les.paid) paidSum += stRate;
-                            else unpaidSum += stRate;
+                            if(les.paid) paidSum += stRate; else unpaidSum += stRate;
                         }
                     }
                 });
-
                 let statusHtml = unpaidSum > 0 ? `<span style="color:#ff3b30; font-weight:bold;">Долг: -${unpaidSum} ₽</span>` : `<span style="color:#34c759; font-weight:bold;">Все оплачено</span>`;
-
-                container.innerHTML += `
-                    <div class="list-item">
-                        <div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">Ставка: ${stRate} ₽/ч</span></div>
-                        <div style="text-align:right;">${statusHtml}<br><span style="font-size:11px; color:gray;">Получено: ${paidSum} ₽</span></div>
-                    </div>`;
+                container.innerHTML += `<div class="list-item"><div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">ID: ${st.tgId || 'нет'}</span></div><div style="text-align:right;">${statusHtml}<br><span style="font-size:11px; color:gray;">Получено: ${paidSum} ₽</span></div></div>`;
             });
             openModal('modal-payments');
         }
 
-        // --- УЧЕНИКИ И СТАВКИ ---
+        // --- УЧЕНИКИ И TG ID ---
         function openAddStudentModal() {
             document.getElementById('st-modal-title').innerText = "Новый ученик";
             document.getElementById('editing-st-index').value = "-1";
             document.getElementById('new-st-name').value = "";
+            document.getElementById('new-st-tgid').value = "";
             document.getElementById('new-st-subject').value = "";
             document.getElementById('new-st-rate').value = "";
             document.getElementById('new-st-time').value = "15:00";
@@ -549,6 +499,7 @@
             document.getElementById('st-modal-title').innerText = "Редактировать ученика";
             document.getElementById('editing-st-index').value = index;
             document.getElementById('new-st-name').value = st.name;
+            document.getElementById('new-st-tgid').value = st.tgId || '';
             document.getElementById('new-st-subject').value = st.subject;
             document.getElementById('new-st-rate').value = st.rate !== undefined ? st.rate : '';
             document.getElementById('new-st-time').value = st.time;
@@ -561,14 +512,12 @@
             openModal('modal-add-student');
         }
 
-        function toggleDay(el) {
-            el.classList.toggle('selected');
-            tg.HapticFeedback.selectionChanged();
-        }
+        function toggleDay(el) { el.classList.toggle('selected'); tg.HapticFeedback.selectionChanged(); }
 
         function saveStudentData() {
             let index = parseInt(document.getElementById('editing-st-index').value);
             let name = document.getElementById('new-st-name').value;
+            let tgId = document.getElementById('new-st-tgid').value;
             let subject = document.getElementById('new-st-subject').value || "Общий";
             let rate = document.getElementById('new-st-rate').value;
             let time = document.getElementById('new-st-time').value || "15:00";
@@ -580,9 +529,9 @@
 
             if(name.trim() !== "") {
                 if(index === -1) {
-                    studentsList.push({ name, subject, rate, time, days: selectedDays });
+                    studentsList.push({ name, tgId, subject, rate, time, days: selectedDays });
                 } else {
-                    studentsList[index] = { name, subject, rate, time, days: selectedDays };
+                    studentsList[index] = { name, tgId, subject, rate, time, days: selectedDays };
                 }
                 localStorage.setItem('tutorStudents', JSON.stringify(studentsList));
                 renderStudents();
@@ -604,7 +553,7 @@
                 let stRate = (st.rate !== '' && !isNaN(st.rate)) ? `${st.rate} ₽/ч` : `Общая (${savedRate} ₽)`;
                 container.innerHTML += `
                     <div class="list-item">
-                        <div><b>${st.name}</b><br><span style="font-size:12px; color:gray;">${st.subject} • ${stRate}<br>${st.time} (${dStr})</span></div>
+                        <div><b>${st.name}</b> <span style="font-size:11px; color:gray;">ID: ${st.tgId || '—'}</span><br><span style="font-size:12px; color:gray;">${st.subject} • ${stRate}<br>${st.time} (${dStr})</span></div>
                         <div style="display:flex; align-items:center;">
                             <button class="edit-st-btn" onclick="openEditStudentModal(${index})">✏️</button>
                             <button class="delete-btn" onclick="removeStudent(${index})">×</button>
@@ -626,7 +575,6 @@
         // --- ПРОФИЛЬ И НАСТРОЙКИ ---
         function updateUI() {
             document.getElementById('user-name').innerText = savedName;
-            document.getElementById('user-subjects').innerText = "Преподаватель (" + savedSubjects + ")";
             document.getElementById('edit-name-input').value = savedName;
             document.getElementById('edit-subjects-input').value = savedSubjects;
             document.getElementById('edit-rate-input').value = savedRate;
@@ -634,14 +582,6 @@
             document.getElementById('edit-bot-link').value = savedBotLink;
             document.getElementById('stat-students').innerText = studentsList.length;
             updateFinanceStats();
-        }
-
-        if (user && user.photo_url) {
-            document.getElementById('user-avatar').src = user.photo_url;
-            document.getElementById('user-avatar').style.display = 'block';
-            document.getElementById('avatar-fallback').style.display = 'none';
-        } else if (user) {
-            document.getElementById('avatar-fallback').innerText = savedName.charAt(0).toUpperCase();
         }
 
         function saveProfile() {
@@ -701,7 +641,6 @@
         }
         tg.BackButton.onClick(function() { closeModal(); });
 
-        // Первичный запуск
         updateUI();
         renderStudents();
         buildCalendar();
